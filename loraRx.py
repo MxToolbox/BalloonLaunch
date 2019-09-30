@@ -3,8 +3,9 @@ import time
 import sys
 import serial
 import argparse 
-
+import codecs
 from serial.threaded import LineReader, ReaderThread
+
 
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('port', help="Serial port descriptor")
@@ -30,19 +31,14 @@ class PrintLines(LineReader):
         
         self.send_cmd("sys set pindig GPIO10 1", delay=0)
         print(data)
-
         try:
             parts = data.split(' ')
             command = parts[0]
-            dataOnly = parts[2]  
-            print(parts)
-            print(command + ' ' + dataOnly)          
-            print(command + ' ' + bytes.fromhex(dataOnly))
+            dataBytes = parts[2]
+            dataStr = codecs.decode(dataBytes, "hex").decode("utf-8")  
+            print(command + ' ' + dataStr)          
         except:
-            print("Ignoring decode error.")
-
-        #bytes.fromhex(j[0][2:])
-        #print(bytes.fromhex(data[0][2:]).decode("utf-8"))
+            print("Ignoring decode error. ")
 
         time.sleep(.1)
         self.send_cmd("sys set pindig GPIO10 0", delay=1)

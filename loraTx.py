@@ -3,7 +3,7 @@ import time
 import sys
 import serial
 import argparse 
-import codecs
+
 
 from serial.threaded import LineReader, ReaderThread
 
@@ -40,7 +40,7 @@ class PrintLines(LineReader):
     def tx(self):
         self.send_cmd("sys set pindig GPIO11 1")
         telemetry = str.encode("Hello world, baby!").hex()
-        #encodedTelemetry = str.encode(telemetry)
+        #txmsg = 'radio tx %s%x' % (telemetry, self.frame_count)
         txmsg = 'radio tx ' + telemetry
         self.send_cmd(txmsg)
         time.sleep(.3)
