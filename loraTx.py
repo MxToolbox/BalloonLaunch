@@ -3,9 +3,12 @@ import time
 import sys
 import serial
 import argparse 
-
+import threading as thread
 
 from serial.threaded import LineReader, ReaderThread
+
+values = [0]*17
+
 
 parser = argparse.ArgumentParser(description='LoRa Radio mode sender.')
 parser.add_argument('port', help="Serial port descriptor")
@@ -39,7 +42,9 @@ class PrintLines(LineReader):
 
     def tx(self):
         self.send_cmd("sys set pindig GPIO11 1")
-        telemetry = str.encode("Hello world, baby!").hex()
+        #valuesStr = ",".join(values )
+        valuesStr = ",".join(map(str,values))
+        telemetry = str.encode(valuesStr).hex()
         #txmsg = 'radio tx %s%x' % (telemetry, self.frame_count)
         txmsg = 'radio tx ' + telemetry
         self.send_cmd(txmsg)
@@ -52,9 +57,14 @@ class PrintLines(LineReader):
         self.write_line(cmd)
         time.sleep(delay)
 
+def sendTelemetry():
+    with ReaderThread(ser, PrintLines) as protocol:
+        while(1):
+            protocol.tx()
+            time.sleep(10)
 
+print("Iniitializing LoRa Telemtry...")
 ser = serial.Serial(args.port, baudrate=57600)
-with ReaderThread(ser, PrintLines) as protocol:
-    while(1):
-        protocol.tx()
-        time.sleep(10)
+telemetry_thread=thread.Thread(target=sendTelemetry) 
+telemetry_thread.setDaemon(True)                  
+telemetry_thread.start()

@@ -1,6 +1,7 @@
 import time
 import csvLog
 import gpsTrack
+import loraTx
 from datetime import datetime, timedelta 
 from sense_hat import SenseHat
 
@@ -10,6 +11,7 @@ def pressureAltitude(millibars):
     return round(((1 - (millibars / 1013.25)** 0.190284)) * 145366.45, 0)
 
 tracker = gpsTrack
+telemetry = loraTx
 
 sense = SenseHat()
 values = [0]*17
@@ -53,6 +55,7 @@ while True:
     print(formatStr.format(*values))
 
     lastPressureAlt = pressureAlt
+    telemetry.values = values
     sense.clear()  # Strobe off
     time.sleep(LogFreqSeconds)
     #sense.show_message("Hello world!")
