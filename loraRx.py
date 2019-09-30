@@ -32,9 +32,12 @@ class PrintLines(LineReader):
         print(data)
 
         try:
-            command = data.split(' ')[0]
-            dataOnly = data.split(' ')[1]            
-            print(command + ' ' + bytes.fromhex('dataOnly))
+            parts = data.split(' ')
+            command = parts[0]
+            dataOnly = parts[2]  
+            print(parts)
+            print(command + ' ' + dataOnly)          
+            print(command + ' ' + bytes.fromhex(dataOnly))
         except:
             print("Ignoring decode error.")
 
