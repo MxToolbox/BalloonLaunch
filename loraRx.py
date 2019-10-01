@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import time
 import sys
 import serial
@@ -7,15 +8,15 @@ import codecs
 from serial.threaded import LineReader, ReaderThread
 #import curses
 from colorama import Fore, Back, Style 
-#import csvLog
+import csvLog
 import zlib
 
 headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time"]
-#csvLog.writeCsvLog(headers)
+csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('port', help="Serial port descriptor")
 args = parser.parse_args()
-
+clear = lambda: os.system('cls')  #'clear' for linux
 class PrintLines(LineReader):
 
     def connection_made(self, transport):
@@ -41,16 +42,17 @@ class PrintLines(LineReader):
         print("RECV: %s" % data)
         
         self.send_cmd("sys set pindig GPIO10 1", delay=0)
-        print(data)
+        #print(data)
         try:
             parts = data.split(' ')
             command = parts[0]
             dataBytes = parts[2]
             if (command == 'radio_rx'):
+                clear()
                 dataStr = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
                 values =   dataStr.split(',')
-                #print(command + ' ' + values)
-                #csvLog.writeCsvLog(values)
+                csvLog.writeCsvLog(values)
+                print('________________________________________________')
                 i = 0          
                 for v in values:
                     formatStr = '| {0:>15} | {1:>26} |'
