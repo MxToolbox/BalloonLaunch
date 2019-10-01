@@ -26,7 +26,7 @@ class PrintLines(LineReader):
         self.send_cmd('radio get freq')
         self.send_cmd('radio get sf')
         self.send_cmd('mac pause')
-        self.send_cmd('radio set pwr 10')
+        self.send_cmd('radio set pwr 20')
         self.send_cmd("sys set pindig GPIO11 0")
         self.frame_count = 0
 
