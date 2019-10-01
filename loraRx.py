@@ -5,12 +5,13 @@ import serial
 import argparse 
 import codecs
 from serial.threaded import LineReader, ReaderThread
-import curses
+#import curses
 from colorama import Fore, Back, Style 
-import csvLog
+#import csvLog
+import zlib
 
 headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time"]
-csvLog.writeCsvLog(headers)
+#csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('port', help="Serial port descriptor")
 args = parser.parse_args()
@@ -20,9 +21,14 @@ class PrintLines(LineReader):
     def connection_made(self, transport):
         print("connection made")
         self.transport = transport
+        self.send_cmd('radio set freq 903500000') 
         self.send_cmd('sys get ver')
+        self.send_cmd('radio get mod')
+        self.send_cmd('radio get freq')
+        self.send_cmd('radio get sf')        
         self.send_cmd('mac pause')
-        self.send_cmd('radio set pwr 10')
+        self.send_cmd('radio set pwr 20')
+      
         self.send_cmd('radio rx 0')
         self.send_cmd("sys set pindig GPIO10 0")
 
@@ -32,6 +38,7 @@ class PrintLines(LineReader):
         if data == "radio_err":
             self.send_cmd('radio rx 0')
             return
+        print("RECV: %s" % data)
         
         self.send_cmd("sys set pindig GPIO10 1", delay=0)
         print(data)
@@ -40,20 +47,21 @@ class PrintLines(LineReader):
             command = parts[0]
             dataBytes = parts[2]
             if (command == 'radio_rx'):
-                dataStr = codecs.decode(dataBytes, "hex").decode("utf-8")
+                dataStr = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
                 values =   dataStr.split(',')
                 #print(command + ' ' + values)
-                csvLog.writeCsvLog(values)
+                #csvLog.writeCsvLog(values)
                 i = 0          
                 for v in values:
                     formatStr = '| {0:>15} | {1:>26} |'
                     print(formatStr.format(headers[i],  v))
+                    #print(Style.RESET_ALL) 
                     i = i + 1
                 print('________________________________________________')
             else:
                 print(data)
         except:
-            print("Ignoring decode error. ")
+            print("Ignoring decode error. " + data)
 
         time.sleep(.1)
         self.send_cmd("sys set pindig GPIO10 0", delay=1)

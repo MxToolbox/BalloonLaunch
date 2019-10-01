@@ -9,7 +9,8 @@ lastFileWrite = datetime.now() - timedelta(seconds=LOG_FREQ_SECONDS)
 logFile = LOCATION + "/logs/flight-data-" + str(datetime.now()) + ".csv"
 eventLogfile = LOCATION + "/event-log.csv"   
 trackFile = LOCATION + "/logs/track-data-" + str(datetime.now()) + ".csv"
-
+trackFile.replace(' ', '-')
+logFile.replace(' ', '-')
 def writeCsvLog(*args): 
     global logFile
     global lastFileWrite

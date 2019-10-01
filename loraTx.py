@@ -4,9 +4,8 @@ import sys
 import serial
 import argparse 
 import threading as thread
-
 from serial.threaded import LineReader, ReaderThread
-
+import zlib
 values = [0]*17
 
 
@@ -21,6 +20,7 @@ class PrintLines(LineReader):
         print("connection made")
         self.transport = transport
         self.send_cmd("sys set pindig GPIO11 0")
+        self.send_cmd('radio set freq 903500000')        
         self.send_cmd('sys get ver')
         self.send_cmd('radio get mod')
         self.send_cmd('radio get freq')
@@ -42,10 +42,21 @@ class PrintLines(LineReader):
 
     def tx(self):
         self.send_cmd("sys set pindig GPIO11 1")
-        #valuesStr = ",".join(values )
+        # delete some data to reduce packet size.
+        values[2] = ''
+        values[3] = ''
+        values[5] = ''        
+        values[6] = ''
+        values[7] = ''
+        values[8] = ''
+        values[9] = ''
+        values[16] = ''
+
         valuesStr = ",".join(map(str,values))
-        telemetry = str.encode(valuesStr).hex()
-        #txmsg = 'radio tx %s%x' % (telemetry, self.frame_count)
+        valueBin = zlib.compress(str.encode(valuesStr))
+        telemetry = valueBin.hex()
+        #telemetry = str.encode(valuesStr).hex()
+
         txmsg = 'radio tx ' + telemetry
         self.send_cmd(txmsg)
         time.sleep(.3)
@@ -53,7 +64,7 @@ class PrintLines(LineReader):
         self.frame_count = self.frame_count + 1
 
     def send_cmd(self, cmd, delay=.5):
-        print("SEND: %s" % cmd)
+        print("SEND: %s bytes " % str(len(cmd)) + cmd )
         self.write_line(cmd)
         time.sleep(delay)
 

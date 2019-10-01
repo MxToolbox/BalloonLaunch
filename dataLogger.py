@@ -52,7 +52,13 @@ while True:
     values[16] = tracker.gpsd.utc 
 
     csvLog.writeCsvLog(values)
-    print(formatStr.format(*values))
+    #print(formatStr.format(*values))
+    i = 0
+    for v in values:
+        formatStr = '| {0:>15} | {1:>26} |'
+        print(formatStr.format(headers[i],  v))
+        i = i + 1
+    print('________________________________________________')
 
     lastPressureAlt = pressureAlt
     telemetry.values = values
