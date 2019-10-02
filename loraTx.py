@@ -6,6 +6,8 @@ import argparse
 import threading as thread
 from serial.threaded import LineReader, ReaderThread
 import zlib
+
+TRANSMIT_FREQ = 5  # seconds
 values = [0]*17
 
 
@@ -72,7 +74,7 @@ def sendTelemetry():
     with ReaderThread(ser, PrintLines) as protocol:
         while(1):
             protocol.tx()
-            time.sleep(10)
+            time.sleep(TRANSMIT_FREQ)
 
 print("Iniitializing LoRa Telemtry...")
 ser = serial.Serial(args.port, baudrate=57600)

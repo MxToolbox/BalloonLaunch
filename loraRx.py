@@ -7,11 +7,20 @@ import argparse
 import codecs
 from serial.threaded import LineReader, ReaderThread
 #import curses
-from colorama import Fore, Back, Style 
+from colorama import Fore, Back, Style, init
 import csvLog
 import zlib
+from geographiclib.geodesic import Geodesic
+#init()
+# rxLat = 30.4196
+# rxLon = -97.8
 
-headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time"]
+rxLat = 30.4316015
+rxLon = -97.7660455
+txLat = 0.0
+txLon = 0.0
+
+headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time", "range (m)", "heading"]
 csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('port', help="Serial port descriptor")
@@ -34,37 +43,51 @@ class PrintLines(LineReader):
         self.send_cmd("sys set pindig GPIO10 0")
 
     def handle_line(self, data):
+        global rxLat
+        global rxLon 
+        global txLat
+        global txLon
         if data == "ok" or data == 'busy':
             return
         if data == "radio_err":
             self.send_cmd('radio rx 0')
             return
-        print("RECV: %s" % data)
-        
         self.send_cmd("sys set pindig GPIO10 1", delay=0)
-        #print(data)
-        try:
+        try:     
+            # try to  parse & decode data      
             parts = data.split(' ')
             command = parts[0]
-            dataBytes = parts[2]
-            if (command == 'radio_rx'):
-                clear()
-                dataStr = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
-                values =   dataStr.split(',')
-                csvLog.writeCsvLog(values)
-                print('________________________________________________')
-                i = 0          
-                for v in values:
-                    formatStr = '| {0:>15} | {1:>26} |'
-                    print(formatStr.format(headers[i],  v))
-                    #print(Style.RESET_ALL) 
-                    i = i + 1
-                print('________________________________________________')
-            else:
-                print(data)
+            dataBytes = parts[2]     
+            dataStr = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
+            values =   dataStr.split(',')
         except:
-            print("Ignoring decode error. " + data)
+            print('INFO: ' + data)
+            return
 
+        # Calc geo range / heading
+        txLat = float(values[10])
+        txLon = float(values[11])
+        geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
+        distance = int(geo['s12'])
+        azimuth = int(geo['azi1'])
+        if azimuth < 0:
+            azimuth = 360 + azimuth
+        values.append(distance)
+        values.append(azimuth)
+
+
+        csvLog.writeCsvLog(values)
+
+        # display output
+        clear()
+        print('________________________________________________')
+        i = 0          
+        for v in values:
+            formatStr = '| {0:>15} | {1:>26} |'
+            print(Fore.YELLOW,formatStr.format(headers[i],  v))
+            #print(Style.RESET_ALL) 
+            i = i + 1
+        print('________________________________________________')
         time.sleep(.1)
         self.send_cmd("sys set pindig GPIO10 0", delay=1)
         self.send_cmd('radio rx 0')
@@ -79,13 +102,6 @@ class PrintLines(LineReader):
         time.sleep(delay)
 
 ser = serial.Serial(args.port, baudrate=57600)
-#stdscr = curses.initscr()
-#curses.noecho()
-#curses.cbreak()
-#begin_x = 20; begin_y = 7
-#height = 5; width = 40
-#win = curses.newwin(height, width, begin_y, begin_x)
-
 with ReaderThread(ser, PrintLines) as protocol:
     while(1):
         pass
