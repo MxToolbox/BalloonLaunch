@@ -6,8 +6,9 @@ LOCATION = os.path.dirname(os.path.abspath(__file__))
 LOG_FREQ_SECONDS = 15
 
 lastFileWrite = datetime.now() - timedelta(seconds=LOG_FREQ_SECONDS)
-#logFile = LOCATION + "/logs/flight-data-" + str(datetime.now()) + ".csv"
-logFile = LOCATION + '\\' + str(datetime.now()) + ".csv"
+logFile = LOCATION + "/logs/flight-data-" + str(datetime.now()).replace(':', '-') + ".csv"
+#logFile = LOCATION + '\\logs\\flight-data-' + str(datetime.now()).replace(':', '-') + ".csv"
+
 eventLogfile = LOCATION + "/event-log.csv"   
 trackFile = LOCATION + "/logs/track-data-" + str(datetime.now()) + ".csv"
 
