@@ -19,8 +19,9 @@ rxLat = 30.4316015
 rxLon = -97.7660455
 txLat = 0.0
 txLon = 0.0
+rssi = ""
 
-headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time", "range (m)", "heading"]
+headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time", "range (m)", "heading", "rssi"]
 csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('port', help="Serial port descriptor")
@@ -38,6 +39,7 @@ class PrintLines(LineReader):
         self.send_cmd('radio get sf')        
         self.send_cmd('mac pause')
         self.send_cmd('radio set pwr 20')
+        
       
         self.send_cmd('radio rx 0')
         self.send_cmd("sys set pindig GPIO10 0")
@@ -47,6 +49,8 @@ class PrintLines(LineReader):
         global rxLon 
         global txLat
         global txLon
+        global rssi
+
         if data == "ok" or data == 'busy':
             return
         if data == "radio_err":
@@ -62,6 +66,7 @@ class PrintLines(LineReader):
             dataStr = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
             values =   dataStr.split(',')
         except:
+            rssi = data
             print('INFO: ' + data)
             return
 
@@ -79,7 +84,7 @@ class PrintLines(LineReader):
         except:
             print("Error calulating GEO data")
             return
-
+        values.append(rssi)
 
         csvLog.writeCsvLog(values)
 
@@ -93,10 +98,11 @@ class PrintLines(LineReader):
             #print(Style.RESET_ALL) 
             i = i + 1
         print('________________________________________________')
+        print(str(len(data)) + " bytes")
         time.sleep(.1)
         self.send_cmd("sys set pindig GPIO10 0", delay=1)
         self.send_cmd('radio rx 0')
-
+        self.send_cmd('radio get rssi')  # requires firmware 1.0.5
     def connection_lost(self, exc):
         if exc:
             print(exc)

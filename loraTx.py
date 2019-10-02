@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+#https://ww1.microchip.com/downloads/en/DeviceDoc/40001784B.pdf
+
 import time
 import sys
 import serial
