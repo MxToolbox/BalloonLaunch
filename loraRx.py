@@ -53,8 +53,9 @@ class PrintLines(LineReader):
             self.send_cmd('radio rx 0')
             return
         self.send_cmd("sys set pindig GPIO10 1", delay=0)
+        # try to  parse & decode data 
         try:     
-            # try to  parse & decode data      
+     
             parts = data.split(' ')
             command = parts[0]
             dataBytes = parts[2]     
@@ -65,15 +66,19 @@ class PrintLines(LineReader):
             return
 
         # Calc geo range / heading
-        txLat = float(values[10])
-        txLon = float(values[11])
-        geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
-        distance = int(geo['s12'])
-        azimuth = int(geo['azi1'])
-        if azimuth < 0:
-            azimuth = 360 + azimuth
-        values.append(distance)
-        values.append(azimuth)
+        try:
+            txLat = float(values[10])
+            txLon = float(values[11])
+            geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
+            distance = int(geo['s12'])
+            azimuth = int(geo['azi1'])
+            if azimuth < 0:
+                azimuth = 360 + azimuth
+            values.append(distance)
+            values.append(azimuth)
+        except:
+            print("Error calulating GEO data")
+            return
 
 
         csvLog.writeCsvLog(values)
