@@ -1,3 +1,4 @@
+import os
 import time
 import csvLog
 import gpsTrack
@@ -9,6 +10,14 @@ def pressureAltitude(millibars):
     # https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
     # takes millibars, returns pressure altitude in feet.
     return round(((1 - (millibars / 1013.25)** 0.190284)) * 145366.45, 0)
+
+hasSetTime = False
+def setTimeFromGps(date_str):
+    global hasSetTime
+    if hasSetTime == False:
+        os.system('hwclock --set --date %s' % date_str)
+        print("hwclock set via GPS time: " + date_str)
+        hasSetTime = True
 
 tracker = gpsTrack
 telemetry = loraTx
@@ -51,6 +60,7 @@ while True:
         values[14] = tracker.gpsd.fix.climb  
         values[15] = tracker.gpsd.fix.track 
         values[16] = tracker.gpsd.utc 
+        
 
         csvLog.writeCsvLog(values)
         #print(formatStr.format(*values))
@@ -67,5 +77,8 @@ while True:
     except:
         print("Unhandled exception!")
         sense.clear(255,0,0)  # Strobe effect while reading sensors
+
+    if tracker.gpsd.utc != '':
+        setTimeFromGps(tracker.gpsd.utc)
     time.sleep(LogFreqSeconds)
     #sense.show_message("Hello world!")
