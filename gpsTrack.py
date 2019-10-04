@@ -1,5 +1,6 @@
 import os
 import time
+import logging
 from gps import *
 
 import threading as thread
@@ -12,7 +13,7 @@ def refreshGpsd():
         time.sleep(.1)  
         # print("hello")
     
-
+logging.info('Iniitializing GPSD...')
 print("Iniitializing GPSD...")
 gpsd = gps(mode=WATCH_ENABLE) 
 tracker_thread=thread.Thread(target=refreshGpsd) 

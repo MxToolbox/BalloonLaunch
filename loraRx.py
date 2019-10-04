@@ -11,9 +11,13 @@ from colorama import Fore, Back, Style, init
 import csvLog
 import zlib
 from geographiclib.geodesic import Geodesic
+import logging
 #init()
 # rxLat = 30.4196
 # rxLon = -97.8
+
+logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
+logging.info('Starting data logger')
 
 rxLat = 30.4316015
 rxLon = -97.7660455

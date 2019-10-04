@@ -1,10 +1,16 @@
 import os
 import time
+import logging
 import csvLog
 import gpsTrack
 import loraTx
 from datetime import datetime, timedelta 
 from sense_hat import SenseHat
+
+LOCATION = os.path.dirname(os.path.abspath(__file__))
+logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
+logging.info('Starting data logger')
+
 
 def pressureAltitude(millibars):
     # https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
@@ -74,10 +80,11 @@ while True:
         lastPressureAlt = pressureAlt
         telemetry.values = values
         sense.clear()  # Strobe off
-    except:
-        print("Unhandled exception!")
-        sense.clear(255,0,0)  # Strobe effect while reading sensors
-
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
+        sense.clear(255,0,0)  # Flash RED on error
+        time.sleep(1)
+        sense.clear()  # Strobe off
     if tracker.gpsd.utc != '':
         setTimeFromGps(tracker.gpsd.utc)
     time.sleep(LogFreqSeconds)
