@@ -12,6 +12,7 @@ import csvLog
 import zlib
 from geographiclib.geodesic import Geodesic
 import logging
+import winsound  #windows only
 #init()
 # rxLat = 30.4196
 # rxLon = -97.8
@@ -19,13 +20,14 @@ import logging
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Starting data logger')
 
+rxPositionSet = False
 rxLat = 30.4316015
 rxLon = -97.7660455
 txLat = 0.0
 txLon = 0.0
 rssi = ""
 
-headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time", "range (m)", "heading", "rssi"]
+headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time", "range (m)", "heading", "snr"]
 csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('port', help="Serial port descriptor")
@@ -54,7 +56,7 @@ class PrintLines(LineReader):
         global txLat
         global txLon
         global rssi
-
+        global rxPositionSet
         if data == "ok" or data == 'busy':
             return
         if data == "radio_err":
@@ -78,6 +80,11 @@ class PrintLines(LineReader):
         try:
             txLat = float(values[10])
             txLon = float(values[11])
+            if (rxPositionSet == False):
+                rxPositionSet = True
+                rxLat = txLat
+                rxLon = txLon
+                #print("Receiver position set to " + rxLat + ' , ' + rxLong )
             geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
             distance = int(geo['s12'])
             azimuth = int(geo['azi1'])
@@ -106,7 +113,10 @@ class PrintLines(LineReader):
         time.sleep(.1)
         self.send_cmd("sys set pindig GPIO10 0", delay=1)
         self.send_cmd('radio rx 0')
-        self.send_cmd('radio get rssi')  # requires firmware 1.0.5
+        self.send_cmd('radio get snr')  # requires firmware 1.0.5
+        frequency = 3500  # Set Frequency To 2500 Hertz
+        duration = 250  # Set Duration To 1000 ms == 1 second      
+        winsound.Beep(frequency, duration)
     def connection_lost(self, exc):
         if exc:
             print(exc)
