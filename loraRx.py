@@ -99,6 +99,10 @@ class PrintLines(LineReader):
 
         csvLog.writeCsvLog(values)
 
+        frequency = 3500  # Set Frequency To 2500 Hertz
+        duration = 250  # Set Duration To 1000 ms == 1 second      
+        winsound.Beep(frequency, duration)
+
         # display output
         clear()
         print('________________________________________________')
@@ -114,9 +118,7 @@ class PrintLines(LineReader):
         self.send_cmd("sys set pindig GPIO10 0", delay=1)
         self.send_cmd('radio rx 0')
         self.send_cmd('radio get snr')  # requires firmware 1.0.5
-        frequency = 3500  # Set Frequency To 2500 Hertz
-        duration = 250  # Set Duration To 1000 ms == 1 second      
-        winsound.Beep(frequency, duration)
+
     def connection_lost(self, exc):
         if exc:
             print(exc)
