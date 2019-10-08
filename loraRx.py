@@ -2,20 +2,20 @@
 import os
 import time
 import sys
+import math
 import serial
 import argparse 
 import codecs
+#import gpsTrack
 from serial.threaded import LineReader, ReaderThread
-#import curses
 from colorama import Fore, Back, Style, init
 import csvLog
 import zlib
 from geographiclib.geodesic import Geodesic
 import logging
 import winsound  #windows only
-#init()
-# rxLat = 30.4196
-# rxLon = -97.8
+
+#tracker = gpsTrack
 
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Starting data logger')
@@ -23,17 +23,20 @@ logging.info('Starting data logger')
 rxPositionSet = False
 rxLat = 30.4316015
 rxLon = -97.7660455
+rxAlt = 800  #feet
 txLat = 0.0
 txLon = 0.0
 rssi = ""
 
-headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time", "range (m)", "heading", "snr"]
+headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation"]
 csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
-parser.add_argument('port', help="Serial port descriptor")
+parser.add_argument('--radio', help="Serial port descriptor")
+parser.add_argument('--gps', help="Serial port descriptor")
 args = parser.parse_args()
 clear = lambda: os.system('cls')  #'clear' for linux
 class PrintLines(LineReader):
+
 
     def connection_made(self, transport):
         print("connection made")
@@ -52,7 +55,8 @@ class PrintLines(LineReader):
 
     def handle_line(self, data):
         global rxLat
-        global rxLon 
+        global rxLon
+        global rxAlt 
         global txLat
         global txLon
         global rssi
@@ -63,13 +67,14 @@ class PrintLines(LineReader):
             self.send_cmd('radio rx 0')
             return
         self.send_cmd("sys set pindig GPIO10 1", delay=0)
+
         # try to  parse & decode data 
         try:     
-     
             parts = data.split(' ')
             command = parts[0]
             dataBytes = parts[2]     
             dataStr = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
+            #print(dataStr)
             values =   dataStr.split(',')
         except:
             rssi = data
@@ -77,25 +82,43 @@ class PrintLines(LineReader):
             return
 
         # Calc geo range / heading
-        try:
-            txLat = float(values[10])
-            txLon = float(values[11])
-            if (rxPositionSet == False):
-                rxPositionSet = True
-                rxLat = txLat
-                rxLon = txLon
-                #print("Receiver position set to " + rxLat + ' , ' + rxLong )
-            geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
-            distance = int(geo['s12'])
-            azimuth = int(geo['azi1'])
-            if azimuth < 0:
-                azimuth = 360 + azimuth
-            values.append(distance)
-            values.append(azimuth)
-        except:
-            print("Error calulating GEO data")
-            return
+        #try:
+        txLat = float(values[10])
+        txLon = float(values[11])
+        if (rxPositionSet == False):
+            rxPositionSet = True
+            rxLat = txLat
+            rxLon = txLon
+            print("Receiver position synced with transmitter position: " + str(rxLat) + ' , ' + str(rxLon) )
+            
+        values[4] = round(((1 - (float(values[3]) / 1013.25)** 0.190284)) * 145366.45, 0)  # calc pressure alt from pressure
+
+        #rxLat = tracker.gpsd.fix.latitude  # Geo from local GPS on transer device
+        #rxLon = tracker.gpsd.fix.longitude 
+        #rxAlt = tracker.gpsd.fix.altitude               
+        geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
+        distance = int(geo['s12'])
+        azimuth = int(geo['azi1'])
+        
+        if azimuth < 0:
+            azimuth = 360 + azimuth
+        values.append(distance)
+        values.append(azimuth)
         values.append(rssi)
+        values.append(rxLat)
+        values.append(rxLon)
+        values.append(rxAlt)
+        txAlt = values[4]
+
+        elevation = 0
+        if distance > 0:
+            elevation = str(math.tan((txAlt - rxAlt) / distance))
+        #print("ele " + elevation)
+        values.append(elevation)  #elevation
+            
+        #except:
+        #    print("Error calulating GEO data")
+
 
         csvLog.writeCsvLog(values)
 
@@ -104,7 +127,7 @@ class PrintLines(LineReader):
         winsound.Beep(frequency, duration)
 
         # display output
-        clear()
+        #clear()
         print('________________________________________________')
         i = 0          
         for v in values:
@@ -128,7 +151,7 @@ class PrintLines(LineReader):
         self.transport.write(('%s\r\n' % cmd).encode('UTF-8'))
         time.sleep(delay)
 
-ser = serial.Serial(args.port, baudrate=57600)
+ser = serial.Serial(args.radio, baudrate=57600)
 with ReaderThread(ser, PrintLines) as protocol:
     while(1):
         pass

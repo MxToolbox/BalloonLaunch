@@ -48,8 +48,8 @@ class PrintLines(LineReader):
         self.send_cmd("sys set pindig GPIO11 1")
         # delete some data to reduce packet size.
         values[2] = ''
-        values[3] = ''
-        values[5] = ''        
+        values[4] = ''
+        #values[5] = ''        
         values[6] = ''
         values[7] = ''
         values[8] = ''
@@ -59,7 +59,6 @@ class PrintLines(LineReader):
         valuesStr = ",".join(map(str,values))
         valueBin = zlib.compress(str.encode(valuesStr))
         telemetry = valueBin.hex()
-        #telemetry = str.encode(valuesStr).hex()
 
         txmsg = 'radio tx ' + telemetry
         self.send_cmd(txmsg)

@@ -52,13 +52,11 @@ while True:
         values[5] = round((pressureAlt - lastPressureAlt) / LogFreqSeconds, 1) # feet per second
         orientation = sense.get_orientation_degrees()
 
-        #sense.set_imu_config(False, True, True)  # gyroscope / accelerometer only
+
         values[6] = round(orientation["pitch"], 0)
         values[7] = round(orientation["roll"], 0)
         values[8] = round(orientation["yaw"], 0)
 
-    # takessense.set_imu_config(True, False, False)  # compass only
-        #values[9] = round(sense.get_compass(), 2)
         values[10] = tracker.gpsd.fix.latitude  # LAT (from another sensor)
         values[11] = tracker.gpsd.fix.longitude  # LON (from another sensor)
         values[12] = tracker.gpsd.fix.altitude  
