@@ -83,15 +83,16 @@ class PrintLines(LineReader):
 
         # Calc geo range / heading
         #try:
+        txAlt = round(((1 - (float(values[3]) / 1013.25)** 0.190284)) * 145366.45, 0)  # calc pressure alt from pressure
+        values[4] = txAlt  #pressure alt (feet)
         txLat = float(values[10])
         txLon = float(values[11])
         if (rxPositionSet == False):
             rxPositionSet = True
             rxLat = txLat
             rxLon = txLon
+            rxAlt = txAlt
             print("Receiver position synced with transmitter position: " + str(rxLat) + ' , ' + str(rxLon) )
-            
-        values[4] = round(((1 - (float(values[3]) / 1013.25)** 0.190284)) * 145366.45, 0)  # calc pressure alt from pressure
 
         #rxLat = tracker.gpsd.fix.latitude  # Geo from local GPS on transer device
         #rxLon = tracker.gpsd.fix.longitude 
@@ -108,12 +109,13 @@ class PrintLines(LineReader):
         values.append(rxLat)
         values.append(rxLon)
         values.append(rxAlt)
-        txAlt = values[4]
+        
 
         elevation = 0
         if distance > 0:
-            elevation = str(math.tan((txAlt - rxAlt) / distance))
-        #print("ele " + elevation)
+            altDeltaMeters = (txAlt - rxAlt) / 3.28
+            print(altDeltaMeters)
+            elevation = str(math.tan(altDeltaMeters / distance))
         values.append(elevation)  #elevation
             
         #except:
