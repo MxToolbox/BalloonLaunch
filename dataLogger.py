@@ -87,7 +87,7 @@ while True:
         sense.clear(255,0,0)  # Flash RED on error
         time.sleep(1)
         sense.clear()  # Strobe off
-    if tracker.gpsd.utc != '':
-        setTimeFromGps(tracker.gpsd.utc)
+    #if tracker.gpsd.utc != '':
+    #    setTimeFromGps(tracker.gpsd.utc)
     time.sleep(LogFreqSeconds)
     #sense.show_message("Hello world!")

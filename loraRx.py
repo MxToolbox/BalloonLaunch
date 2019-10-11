@@ -143,9 +143,14 @@ class PrintLines(LineReader):
         print('________________________________________________')
         print(str(len(data)) + " bytes")
         time.sleep(.1)
-        self.send_cmd("sys set pindig GPIO10 0", delay=1)
-        self.send_cmd('radio rx 0')
-        self.send_cmd('radio get snr')  # requires firmware 1.0.5
+        try:
+            self.send_cmd("sys set pindig GPIO10 0", delay=1)
+            self.send_cmd('radio rx 0')
+            self.send_cmd('radio get snr')  # requires firmware 1.0.5
+        except:
+            print("Possible Access denied error while writing! Press ENTER to continue...")
+            #Warning:  comment out the line below!
+            input1 = input() 
 
     def connection_lost(self, exc):
         if exc:
@@ -156,6 +161,7 @@ class PrintLines(LineReader):
         self.transport.write(('%s\r\n' % cmd).encode('UTF-8'))
         time.sleep(delay)
 
+# Main loop
 ser = serial.Serial(args.radio, baudrate=57600)
 with ReaderThread(ser, PrintLines) as protocol:
     while(1):
