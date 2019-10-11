@@ -39,7 +39,11 @@ LogFreqSeconds = 1
 lastPressureAlt = pressureAltitude(sense.pressure)
 while True:
     try:
-        sense.clear(255,255,255)  # Strobe effect while reading sensors
+        #sense.clear(255,255,255)  # Strobe effect while reading sensors
+        sense.set_pixel(0, 0, (0, 0, 255))
+        sense.set_pixel(0, 1, (0, 0, 255))
+        sense.set_pixel(1, 0, (0, 0, 255))
+        sense.set_pixel(1, 1, (0, 0, 255))
         currentTime = datetime.now()
         values[0] = str(currentTime)
         values[1] = round(sense.temp, 3)    # celsius
