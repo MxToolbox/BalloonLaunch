@@ -29,9 +29,12 @@ tracker = gpsTrack
 telemetry = loraTx
 
 sense = SenseHat()
-values = [0]*17
-headers = [0]*17
-headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time"]
+maxAltPressure = 0 # feet
+maxAltGps = 0  # meters
+
+values = [0]*19
+headers = [0]*19
+headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure"]
 formatStr = '| {0:>26} | {1:>6} | {2:>8} | {3:>8} | {4:>12} | {5:>10} | {6:>6} | {7:>6} | {8:>6} | {9:>6} | {10:>14} | {11:>14} | {12:>10} | {13:>10} | {14:>10} | {15:>10}'
 print(formatStr.format(*headers))
 csvLog.writeCsvLog(headers)
@@ -67,8 +70,9 @@ while True:
         values[13] = tracker.gpsd.fix.speed  
         values[14] = tracker.gpsd.fix.climb  
         values[15] = tracker.gpsd.fix.track 
-        values[16] = tracker.gpsd.utc 
-        
+        values[16] = tracker.gpsd.utc
+        values[17] = maxAltGps
+        values[18] = maxAltPressure
 
         csvLog.writeCsvLog(values)
         #print(formatStr.format(*values))
@@ -79,8 +83,15 @@ while True:
             i = i + 1
         print('________________________________________________')
 
-        lastPressureAlt = pressureAlt
+        lastPressureAlt = pressureAlt  # for calculating vertical 
         telemetry.values = values
+        
+        # Check Max Alt
+        if values[12] > maxAltGps:
+            maxAltGps = values[12] 
+        if values[4] > maxAltPressure:
+            maxAltPressure = values[4] 
+
         sense.clear()  # Strobe off
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)

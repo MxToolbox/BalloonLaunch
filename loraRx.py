@@ -28,7 +28,7 @@ txLat = 0.0
 txLon = 0.0
 rssi = ""
 
-headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed", "gps climb", "gps track", "gps time", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
+headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
 csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('--radio', help="Serial port descriptor")
