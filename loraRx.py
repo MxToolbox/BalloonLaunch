@@ -2,11 +2,11 @@
 import os
 import time
 import sys
+import traceback
 import math
 import serial
 import argparse 
 import codecs
-#import gpsTrack
 from serial.threaded import LineReader, ReaderThread
 from colorama import Fore, Back, Style, init
 import csvLog
@@ -14,8 +14,9 @@ import zlib
 from geographiclib.geodesic import Geodesic
 import logging
 import winsound  #windows only
+import gpsFileWatcher
 
-#tracker = gpsTrack
+gpsWatcher = gpsFileWatcher
 
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Starting data logger')
@@ -94,9 +95,10 @@ class PrintLines(LineReader):
                 rxAlt = txAlt
                 print("Receiver position synced with transmitter position: " + str(rxLat) + ' , ' + str(rxLon) )
 
-            #rxLat = tracker.gpsd.fix.latitude  # Geo from local GPS on transer device
-            #rxLon = tracker.gpsd.fix.longitude 
-            #rxAlt = tracker.gpsd.fix.altitude               
+            rxLat = gpsWatcher.latitude  # Geo from local GPS on transer device
+            rxLon = gpsWatcher.longitude 
+            rxAlt = gpsWatcher.altitude               
+            
             geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
             distance = int(geo['s12'])
             azimuth = int(geo['azi1'])
@@ -122,7 +124,7 @@ class PrintLines(LineReader):
             values.append(int(los_range))  #los range accounting for elevation
 
         except:
-            print("Error calulating GEO data")
+            print("Error calulating GEO data " + traceback.format_exc())
 
 
         csvLog.writeCsvLog(values)
@@ -165,4 +167,6 @@ class PrintLines(LineReader):
 ser = serial.Serial(args.radio, baudrate=57600)
 with ReaderThread(ser, PrintLines) as protocol:
     while(1):
+        time.sleep(.1)
         pass
+        
