@@ -4,6 +4,7 @@ import time
 import sys
 import traceback
 import math
+import numpy
 import serial
 import argparse 
 import codecs
@@ -98,7 +99,7 @@ class PrintLines(LineReader):
             rxLat = gpsWatcher.latitude  # Geo from local GPS on transer device
             rxLon = gpsWatcher.longitude 
             rxAlt = gpsWatcher.altitude               
-            
+
             geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
             distance = int(geo['s12'])
             azimuth = int(geo['azi1'])
@@ -117,8 +118,9 @@ class PrintLines(LineReader):
             los_range = 0
             if distance > 0:
                 altDeltaMeters = (txAlt / 3.28) - rxAlt  #txAlt is pressure alt in feet!
-                print(altDeltaMeters)
-                elevation = str(math.tan(altDeltaMeters / distance))
+                #print(altDeltaMeters)
+                elevation = str(int((numpy.arctan(altDeltaMeters / distance)) * 57.2958))  #radians to degrees
+                #elevation = str(math.tan(altDeltaMeters / distance))
                 los_range = math.sqrt(altDeltaMeters**2 + distance**2)
             values.append(round(float(elevation),1))  #elevation
             values.append(int(los_range))  #los range accounting for elevation
