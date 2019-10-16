@@ -116,7 +116,7 @@ class PrintLines(LineReader):
             elevation = 0
             los_range = 0
             if distance > 0:
-                altDeltaMeters = (txAlt - rxAlt) / 3.28
+                altDeltaMeters = (txAlt / 3.28) - rxAlt  #txAlt is pressure alt in feet!
                 print(altDeltaMeters)
                 elevation = str(math.tan(altDeltaMeters / distance))
                 los_range = math.sqrt(altDeltaMeters**2 + distance**2)
