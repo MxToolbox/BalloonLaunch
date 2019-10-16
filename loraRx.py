@@ -100,7 +100,7 @@ class PrintLines(LineReader):
             rxLon = gpsWatcher.longitude 
             rxAlt = gpsWatcher.altitude               
 
-            geo = Geodesic.WGS84.Inverse(txLat, txLon, rxLat, rxLon)
+            geo = Geodesic.WGS84.Inverse(rxLat, rxLon, txLat, txLon)
             distance = int(geo['s12'])
             azimuth = int(geo['azi1'])
             
