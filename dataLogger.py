@@ -64,12 +64,12 @@ while True:
         values[7] = round(orientation["roll"], 0)
         values[8] = round(orientation["yaw"], 0)
 
-        values[10] = tracker.gpsd.fix.latitude  # LAT (from another sensor)
-        values[11] = tracker.gpsd.fix.longitude  # LON (from another sensor)
-        values[12] = tracker.gpsd.fix.altitude  
-        values[13] = tracker.gpsd.fix.speed  
-        values[14] = tracker.gpsd.fix.climb  
-        values[15] = tracker.gpsd.fix.track 
+        values[10] = round(tracker.gpsd.fix.latitude,6)  # LAT (from another sensor)
+        values[11] = round(tracker.gpsd.fix.longitude,6)  # LON (from another sensor)
+        values[12] = int(tracker.gpsd.fix.altitude)
+        values[13] = int(tracker.gpsd.fix.speed)
+        values[14] = int(tracker.gpsd.fix.climb)
+        values[15] = int(tracker.gpsd.fix.track)
         values[16] = tracker.gpsd.utc
         values[17] = maxAltGps
         values[18] = maxAltPressure

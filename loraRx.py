@@ -17,6 +17,8 @@ import logging
 import winsound  #windows only
 import gpsFileWatcher
 
+init()
+
 gpsWatcher = gpsFileWatcher
 
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
@@ -30,7 +32,8 @@ txLat = 0.0
 txLon = 0.0
 rssi = ""
 
-headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
+headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed (ft/s)","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed (m/s)", "gps climb (m/s)", "gps track", "gps time","maxAltGps (m)","maxAltPressure (ft)", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
+colors = [Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE]
 csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('--radio', help="Serial port descriptor")
@@ -96,9 +99,9 @@ class PrintLines(LineReader):
                 rxAlt = txAlt
                 print("Receiver position synced with transmitter position: " + str(rxLat) + ' , ' + str(rxLon) )
 
-            rxLat = gpsWatcher.latitude  # Geo from local GPS on transer device
-            rxLon = gpsWatcher.longitude 
-            rxAlt = gpsWatcher.altitude               
+            rxLat = round(gpsWatcher.latitude,6)  # Geo from local GPS on transer device
+            rxLon = round(gpsWatcher.longitude,6)
+            rxAlt = int(gpsWatcher.altitude)
 
             geo = Geodesic.WGS84.Inverse(rxLat, rxLon, txLat, txLon)
             distance = int(geo['s12'])
@@ -137,14 +140,14 @@ class PrintLines(LineReader):
 
         # display output
         #clear()
-        print('________________________________________________')
+        print(' _____________________________________________________')
         i = 0          
         for v in values:
-            formatStr = '| {0:>17} | {1:<26} |'
-            print(Fore.YELLOW,formatStr.format(headers[i],  v))
+            formatStr = '| {0:>20} | {1:<26} |'
+            print(colors[i] ,formatStr.format(headers[i],  v))
             #print(Style.RESET_ALL) 
             i = i + 1
-        print('________________________________________________')
+        print(' _____________________________________________________')
         print(str(len(data)) + " bytes")
         time.sleep(.1)
         try:
