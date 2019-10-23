@@ -5,7 +5,8 @@ import csvLog
 import gpsTrack
 import loraTx
 from datetime import datetime, timedelta 
-from sense_hat import SenseHat
+import metrics_sensehat
+metrics = metrics_sensehat
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
@@ -28,7 +29,7 @@ def setTimeFromGps(date_str):
 tracker = gpsTrack
 telemetry = loraTx
 
-sense = SenseHat()
+
 maxAltPressure = 0 # feet
 maxAltGps = 0  # meters
 
@@ -39,25 +40,24 @@ formatStr = '| {0:>26} | {1:>6} | {2:>8} | {3:>8} | {4:>12} | {5:>10} | {6:>6} |
 print(formatStr.format(*headers))
 csvLog.writeCsvLog(headers)
 LogFreqSeconds = 1
-lastPressureAlt = pressureAltitude(sense.pressure)
+lastPressureAlt = pressureAltitude(metrics.pressure)
 while True:
     try:
-        #sense.clear(255,255,255)  # Strobe effect while reading sensors
-        sense.set_pixel(0, 0, (0, 0, 255))
-        sense.set_pixel(0, 1, (0, 0, 255))
-        sense.set_pixel(1, 0, (0, 0, 255))
-        sense.set_pixel(1, 1, (0, 0, 255))
+        #sense.set_pixel(0, 0, (0, 0, 255))
+        #sense.set_pixel(0, 1, (0, 0, 255))
+        #sense.set_pixel(1, 0, (0, 0, 255))
+        #sense.set_pixel(1, 1, (0, 0, 255))
         currentTime = datetime.now()
         values[0] = str(currentTime)
-        values[1] = round(sense.temp, 3)    # celsius
-        values[2] = round(sense.humidity, 3) # %
-        values[3] = round(sense.pressure, 3) # millibars
+        values[1] = round(metrics.temp, 3)    # celsius
+        values[2] = round(metrics.humidity, 3) # %
+        values[3] = round(metrics.pressure, 3) # millibars
 
-        pressureAlt = pressureAltitude(sense.pressure)
+        pressureAlt = pressureAltitude(metrics.pressure)
         values[4] = round(pressureAlt, 0) # feet
 
         values[5] = round((pressureAlt - lastPressureAlt) / LogFreqSeconds, 1) # feet per second
-        orientation = sense.get_orientation_degrees()
+        orientation = metrics.orientation_degrees
 
 
         values[6] = round(orientation["pitch"], 0)
@@ -92,12 +92,12 @@ while True:
         if values[4] > maxAltPressure:
             maxAltPressure = values[4] 
 
-        sense.clear()  # Strobe off
+        #sense.clear()  # Strobe off
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)
-        sense.clear(255,0,0)  # Flash RED on error
+        #sense.clear(255,0,0)  # Flash RED on error
         time.sleep(1)
-        sense.clear()  # Strobe off
+        #sense.clear()  # Strobe off
     #if tracker.gpsd.utc != '':
     #    setTimeFromGps(tracker.gpsd.utc)
     time.sleep(LogFreqSeconds)
