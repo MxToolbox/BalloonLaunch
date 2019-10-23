@@ -104,8 +104,13 @@ class PrintLines(LineReader):
             rxAlt = int(gpsWatcher.altitude)
 
             geo = Geodesic.WGS84.Inverse(rxLat, rxLon, txLat, txLon)
-            distance = int(geo['s12'])
-            azimuth = int(geo['azi1'])
+            distance = 0
+            azimuth = 0
+            if math.isnan(rxLat) or math.isnan(rxLon) or math.isnan(txLat)  or math.isnan(txLon):
+                print("Missing GPS Fix")
+            else:                
+                distance = int(geo['s12'])
+                azimuth = int(geo['azi1'])
             
             if azimuth < 0:
                 azimuth = 360 + azimuth
