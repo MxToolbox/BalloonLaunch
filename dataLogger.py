@@ -6,8 +6,12 @@ import gpsTrack
 import loraTx
 from datetime import datetime, timedelta 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import metrics_sensehat
 metrics = metrics_sensehat
+=======
+from sense_hat import SenseHat
+>>>>>>> parent of 2f77bf7... Got BMP280 working.  Still working on new GPS.
 =======
 from sense_hat import SenseHat
 >>>>>>> parent of 2f77bf7... Got BMP280 working.  Still working on new GPS.
@@ -45,7 +49,11 @@ print(formatStr.format(*headers))
 csvLog.writeCsvLog(headers)
 LogFreqSeconds = 1
 <<<<<<< HEAD
+<<<<<<< HEAD
 lastPressureAlt = pressureAltitude(metrics.pressure)
+=======
+lastPressureAlt = pressureAltitude(sense.pressure)
+>>>>>>> parent of 2f77bf7... Got BMP280 working.  Still working on new GPS.
 =======
 lastPressureAlt = pressureAltitude(sense.pressure)
 >>>>>>> parent of 2f77bf7... Got BMP280 working.  Still working on new GPS.
@@ -59,6 +67,7 @@ while True:
         currentTime = datetime.now()
         values[0] = str(currentTime)
 <<<<<<< HEAD
+<<<<<<< HEAD
         values[1] = round(metrics.temp, 3)    # celsius
         values[2] = round(metrics.humidity, 3) # %
         values[3] = round(metrics.pressure, 3) # millibars
@@ -69,6 +78,8 @@ while True:
         values[5] = round((pressureAlt - lastPressureAlt) / LogFreqSeconds, 1) # feet per second
         orientation = metrics.orientation_degrees
 =======
+=======
+>>>>>>> parent of 2f77bf7... Got BMP280 working.  Still working on new GPS.
         values[1] = round(sense.temp, 3)    # celsius
         values[2] = round(sense.humidity, 3) # %
         values[3] = round(sense.pressure, 3) # millibars
@@ -78,6 +89,9 @@ while True:
 
         values[5] = round((pressureAlt - lastPressureAlt) / LogFreqSeconds, 1) # feet per second
         orientation = sense.get_orientation_degrees()
+<<<<<<< HEAD
+>>>>>>> parent of 2f77bf7... Got BMP280 working.  Still working on new GPS.
+=======
 >>>>>>> parent of 2f77bf7... Got BMP280 working.  Still working on new GPS.
 
 
