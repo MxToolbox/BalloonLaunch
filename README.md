@@ -15,7 +15,7 @@
 * `sudo apt-get install gpsd gpsd-clients python-gps`
 * `sudo pip3 install numpy`
 * `sudo pip3 install gps`
-* `sudo gpsd /dev/ttyUSB0 -F /var/run/gpsd.sock`
+* `sudo gpsd /dev/serial0 -F /var/run/gpsd.sock`
 * `sudo pip3 install geographiclib`
 You may need to set your GPS serial port in /etc/defaults/GPSD
 Also, gpsctl -[nb] swithes between NEMA and binary for the UBlox M8
@@ -28,6 +28,7 @@ http://manpages.ubuntu.com/manpages/bionic/man1/gpsctl.1.html
 
 # Other helpful stuff:
 * `sudo apt-get install i2c-tools`  (i2cdetect)
+For windows text to speech:  `pip install pyttsx3`
 
 sudo pip install Adafruit_BMP085????
 

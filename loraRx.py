@@ -16,6 +16,10 @@ from geographiclib.geodesic import Geodesic
 import logging
 import winsound  #windows only
 import gpsFileWatcher
+import pyttsx3
+
+voice = pyttsx3.init()
+
 
 init()
 
@@ -23,6 +27,8 @@ gpsWatcher = gpsFileWatcher
 
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Starting data logger')
+voice.say('Starting data logger')
+voice.runAndWait()
 
 rxPositionSet = False
 rxLat = 30.4316015
@@ -108,7 +114,10 @@ class PrintLines(LineReader):
             distance = 0
             azimuth = 0
             if math.isnan(rxLat) or math.isnan(rxLon) or math.isnan(txLat)  or math.isnan(txLon) or lastFix > 60.0:
-                print(Fore.WHITE, "Missing GPS Fix.  Last fix was " + str(round(lastFix/60,1)) + " minutes ago!")
+                msg = "Missing GPS Fix.  Last fix was " + str(round(lastFix/60,1)) + " minutes ago!"
+                print(Fore.WHITE,msg )
+                #voice.say(msg)
+                #voice.runAndWait()
                 frequency = 500  # lower tone
                 duration = 350  # longer duration 
             else:                
