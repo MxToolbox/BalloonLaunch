@@ -15,6 +15,7 @@ trackFile = LOCATION + "/logs/track-data-" + str(datetime.now()) + ".csv"
 def writeCsvLog(*args): 
     global logFile
     global lastFileWrite
+    
     with open(logFile, mode='a') as results_file:
         # ignore data under the logging frequency limit
         if datetime.now() > lastFileWrite + timedelta(seconds=LOG_FREQ_SECONDS):
