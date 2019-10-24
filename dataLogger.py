@@ -1,5 +1,6 @@
 import os
 import time
+import math
 import logging
 import csvLog
 import gpsTrack
@@ -33,20 +34,24 @@ telemetry = loraTx
 maxAltPressure = 0 # feet
 maxAltGps = 0  # meters
 
-values = [0]*19
-headers = [0]*19
-headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure"]
+values = [0]*23
+headers = [0]*23
+headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "HDOP", "VDOP", "LastFix", "Mode"]
 formatStr = '| {0:>26} | {1:>6} | {2:>8} | {3:>8} | {4:>12} | {5:>10} | {6:>6} | {7:>6} | {8:>6} | {9:>6} | {10:>14} | {11:>14} | {12:>10} | {13:>10} | {14:>10} | {15:>10}'
 print(formatStr.format(*headers))
 csvLog.writeCsvLog(headers)
 LogFreqSeconds = 1
+
 lastPressureAlt = pressureAltitude(bmp.sensor.pressure)
+lastGoodGpsFix = datetime.now()
+lastGoodLat = math.nan
+lastGoodLon = math.nan
+lastGoodAlt = math.nan
+hasGpsFix = False
 while True:
     try:
         #sense.set_pixel(0, 0, (0, 0, 255))
-        #sense.set_pixel(0, 1, (0, 0, 255))
-        #sense.set_pixel(1, 0, (0, 0, 255))
-        #sense.set_pixel(1, 1, (0, 0, 255))
+
         currentTime = datetime.now()
         values[0] = str(currentTime)
         values[1] = round(bmp.sensor.temperature, 3)    # celsius
@@ -63,16 +68,31 @@ while True:
         #values[6] = round(orientation["pitch"], 0)
         #values[7] = round(orientation["roll"], 0)
         #values[8] = round(orientation["yaw"], 0)
+        currentLat = tracker.gpsd.fix.latitude
+        currentLon = tracker.gpsd.fix.longitude
+        currentAlt = tracker.gpsd.fix.altitude
+        if math.isnan(currentLat) or math.isnan(currentLon) or math.isnan(currentAlt):
+            hasGpsFix = False
+        else:
+            hasGpsFix = True
+            lastGoodLat = currentLat
+            lastGoodLon = currentLon
+            lastGoodAlt = currentAlt
+            lastGoodGpsFix = datetime.now()
 
-        values[10] = tracker.gpsd.fix.latitude  # LAT (from another sensor)
-        values[11] = tracker.gpsd.fix.longitude  # LON (from another sensor)
-        values[12] = tracker.gpsd.fix.altitude  
+        values[10] =  lastGoodLat # LAT (from another sensor)
+        values[11] =  lastGoodLon # LON (from another sensor)
+        values[12] =  lastGoodAlt 
         values[13] = tracker.gpsd.fix.speed  
         values[14] = tracker.gpsd.fix.climb  
         values[15] = tracker.gpsd.fix.track 
         values[16] = tracker.gpsd.utc
         values[17] = maxAltGps
         values[18] = maxAltPressure
+        values[19] = tracker.gpsd.hdop
+        values[20] = tracker.gpsd.vdop
+        values[21] = round((datetime.now() - lastGoodGpsFix).total_seconds(), 1)  #LastFix (seconds since)
+        values[22] = 0  #Mode
 
         csvLog.writeCsvLog(values)
         #print(formatStr.format(*values))

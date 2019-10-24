@@ -32,8 +32,8 @@ txLat = 0.0
 txLon = 0.0
 rssi = ""
 
-headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed (ft/s)","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed (m/s)", "gps climb (m/s)", "gps track", "gps time","maxAltGps (m)","maxAltPressure (ft)", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
-colors = [Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE]
+headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed (ft/s)","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed (m/s)", "gps climb (m/s)", "gps track", "gps time","maxAltGps (m)","maxAltPressure (ft)", "HDOP", "VDOP", "LastFix", "Mode", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
+colors = [Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE]
 csvLog.writeCsvLog(headers)
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('--radio', help="Serial port descriptor")
@@ -92,6 +92,7 @@ class PrintLines(LineReader):
             values[4] = txAlt  #pressure alt (feet)
             txLat = float(values[10])
             txLon = float(values[11])
+            lastFix = float(values[21])
             if (rxPositionSet == False):
                 rxPositionSet = True
                 rxLat = txLat
@@ -106,11 +107,15 @@ class PrintLines(LineReader):
             geo = Geodesic.WGS84.Inverse(rxLat, rxLon, txLat, txLon)
             distance = 0
             azimuth = 0
-            if math.isnan(rxLat) or math.isnan(rxLon) or math.isnan(txLat)  or math.isnan(txLon):
-                print("Missing GPS Fix")
+            if math.isnan(rxLat) or math.isnan(rxLon) or math.isnan(txLat)  or math.isnan(txLon) or lastFix > 60.0:
+                print(Fore.WHITE, "Missing GPS Fix.  Last fix was " + str(round(lastFix/60,1)) + " minutes ago!")
+                frequency = 500  # lower tone
+                duration = 350  # longer duration 
             else:                
                 distance = int(geo['s12'])
                 azimuth = int(geo['azi1'])
+                frequency = 2500  # higher tone
+                duration = 250  # shorter duration 
             
             if azimuth < 0:
                 azimuth = 360 + azimuth
@@ -139,8 +144,8 @@ class PrintLines(LineReader):
 
         csvLog.writeCsvLog(values)
 
-        frequency = 3500  # Set Frequency To 2500 Hertz
-        duration = 250  # Set Duration To 1000 ms == 1 second      
+        #frequency = 3500  # Set Frequency To 2500 Hertz
+             
         winsound.Beep(frequency, duration)
 
         # display output
