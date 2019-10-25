@@ -9,7 +9,7 @@ import bmp280
 import flightModes
 
 gpsd = None 
-mode = flightModes
+#mode = flightModes
 bmp = bmp280
 
 maxAltPressure = 0 # feet
@@ -24,30 +24,35 @@ lastGoodLat = math.nan
 lastGoodLon = math.nan
 lastGoodAlt = math.nan
 
+lastUpdate = datetime.now()
 def update():
+    global lastUpdate 
     global lastGoodLat
     global lastGoodLon 
     global lastGoodAlt 
     global lastGoodGpsFix 
     global lastTemperature
+    global maxAltGps
+    lastUpdate = datetime.now()
+
     currentLat = gpsd.fix.latitude
     currentLon = gpsd.fix.longitude
     currentAlt = gpsd.fix.altitude
     if math.isnan(currentLat) or math.isnan(currentLon) or math.isnan(currentAlt):
-        mode.hasGpsFix = False
+        flightModes.hasGpsFix = False
+        # This prevents overriding the last known Fix with NaN
     else:
-        mode.hasGpsFix = True
-        lastGoodLat = currentLat
-        lastGoodLon = currentLon
-        lastGoodAlt = currentAlt
+        flightModes.hasGpsFix = True
+        lastGoodLat = round(currentLat, 4)
+        lastGoodLon = round(currentLon, 4)
+        lastGoodAlt = int(currentAlt)
         lastGoodGpsFix = datetime.now()    
         # Check Max GPS Alt
         if lastGoodAlt > maxAltGps:
             maxAltGps = lastGoodAlt 
     
-    # Update pressure Alt
-    pressureAltitude()
-    lastTemperature = bmp.sensor.temperature
+    # Update PressureAlt / Temp
+    pressureAltitude()  
 
 def pressureAltitude():
     # https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
@@ -55,20 +60,25 @@ def pressureAltitude():
     global lastPressure
     global lastPressureAlt
     global maxAltPressure
-    lastPressure = bmp.sensor.pressure  # millibars
+    global verticalSpeedFps
+    lastPressure = int(bmp.sensor.pressure)  # millibars
     currentPressureAlt = round(((1 - (lastPressure / 1013.25)** 0.190284)) * 145366.45, 0)
     if currentPressureAlt > maxAltPressure:
-        maxAltPressure = currentPressureAlt    
+        maxAltPressure = int(currentPressureAlt)
 
-    #MAJOR BUG HERE!  NEED TO GET CORRECT number of seconds since last update
-    LogFreqSeconds = 5
-
-    verticalSpeedFps = round((currentPressureAlt - lastPressureAlt) / LogFreqSeconds, 1) # feet per second
-    lastPressureAlt = currentPressureAlt
+    verticalSpeedFps = round((currentPressureAlt - lastPressureAlt) / secondsSinceLastUpdate(), 1) # feet per second
+    lastPressureAlt = int(currentPressureAlt)
+    lastTemperature = bmp.sensor.temperature
     return currentPressureAlt
 
 def secondsSinceLastGoodFix():
     return  round((datetime.now() - lastGoodGpsFix).total_seconds(), 1)  #LastFix (seconds since)
+
+def secondsSinceLastUpdate():
+    seconds = round((datetime.now() - lastUpdate).total_seconds(), 1) 
+    if seconds == 0:
+        seconds = 1  #prevent div/0
+    return  seconds
 
 # GPS monitoring Thread:
 #----------------------------------------------

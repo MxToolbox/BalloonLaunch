@@ -11,23 +11,15 @@ LOCATION = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Starting data logger')
 
-def pressureAltitude(millibars):
-    # https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
-    # takes millibars, returns pressure altitude in feet.
-    return round(((1 - (millibars / 1013.25)** 0.190284)) * 145366.45, 0)
-
 tracker = telemetry
 transmitter = loraTx
-
-maxAltPressure = 0 # feet
-maxAltGps = 0  # meters
 
 values = [0]*23
 headers = [0]*23
 headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "HDOP", "VDOP", "LastFix", "Mode"]
 csvLog.writeCsvLog(headers)
 
-LogFreqSeconds = 1
+LogFreqSeconds = 5
 while True:
     try:
         tracker.update()
@@ -51,9 +43,11 @@ while True:
         values[19] = tracker.gpsd.hdop
         values[20] = tracker.gpsd.vdop
         values[21] = tracker.secondsSinceLastGoodFix()
-        values[22] = tracker.mode.ModeBitArray() #Mode
+        values[22] = tracker.flightModes.GetModeBitArray() #Mode
 
         csvLog.writeCsvLog(values)
+
+        # print local debug
         i = 0
         for v in values:
             formatStr = '| {0:>15} | {1:>26} |'
@@ -62,7 +56,6 @@ while True:
         print('________________________________________________')
 
         transmitter.values = values
-
 
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)

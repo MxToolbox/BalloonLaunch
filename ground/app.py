@@ -24,8 +24,8 @@ init()  # colorama
 gpsWatcher = gpsFileWatcher
 
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
-logging.info('Starting data logger')
-voice.say('Starting data logger')
+logging.info('Initializing Ground Control')
+voice.say('Initializing Ground Control')
 voice.runAndWait()
 
 rxPositionSet = False
@@ -39,11 +39,12 @@ rssi = ""
 headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed (ft/s)","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed (m/s)", "gps climb (m/s)", "gps track", "gps time","maxAltGps (m)","maxAltPressure (ft)", "HDOP", "VDOP", "LastFix", "Mode", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
 colors = [Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE]
 csvLog.writeCsvLog(headers)
+
 parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('--radio', help="Serial port descriptor")
 parser.add_argument('--gps', help="Serial port descriptor")
 args = parser.parse_args()
-clear = lambda: os.system('cls')  #'clear' for linux
+
 class PrintLines(LineReader):
 
 
@@ -138,9 +139,7 @@ class PrintLines(LineReader):
             los_range = 0
             if distance > 0:
                 altDeltaMeters = (txAlt / 3.28) - rxAlt  #txAlt is pressure alt in feet!
-                #print(altDeltaMeters)
                 elevation = str(int((numpy.arctan(altDeltaMeters / distance)) * 57.2958))  #radians to degrees
-                #elevation = str(math.tan(altDeltaMeters / distance))
                 los_range = math.sqrt(altDeltaMeters**2 + distance**2)
             values.append(round(float(elevation),1))  #elevation
             values.append(int(los_range))  #los range accounting for elevation
@@ -150,13 +149,9 @@ class PrintLines(LineReader):
 
 
         csvLog.writeCsvLog(values)
-
-        #frequency = 3500  # Set Frequency To 2500 Hertz
-             
         winsound.Beep(frequency, duration)
 
         # display output
-        #clear()
         print(' _____________________________________________________')
         i = 0          
         for v in values:
@@ -167,14 +162,13 @@ class PrintLines(LineReader):
         print(' _____________________________________________________')
         print(str(len(data)) + " bytes")
         time.sleep(.1)
+
         try:
             self.send_cmd("sys set pindig GPIO10 0", delay=1)
             self.send_cmd('radio rx 0')
             self.send_cmd('radio get snr')  # requires firmware 1.0.5
         except:
             print("Possible Access denied error while writing! Press ENTER to continue...")
-            #Warning:  comment out the line below!
-            input1 = input() 
 
     def connection_lost(self, exc):
         if exc:

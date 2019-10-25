@@ -1,0 +1,13 @@
+﻿
+
+Latitude           : 30.4382746666667
+Longitude          : -97.8133355
+Altitude           : 254.2
+HorizontalAccuracy : 2
+VerticalAccuracy   : 3
+Speed              : 0.019034384009322
+Course             : 0
+IsUnknown          : False
+
+
+
