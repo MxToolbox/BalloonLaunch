@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+import sys
 import os
 import time
-import sys
 import traceback
 import math
 import numpy
@@ -10,19 +10,17 @@ import argparse
 import codecs
 from serial.threaded import LineReader, ReaderThread
 from colorama import Fore, Back, Style, init
-import csvLog
 import zlib
 from geographiclib.geodesic import Geodesic
 import logging
 import winsound  #windows only
-import gpsFileWatcher
 import pyttsx3
+import gpsFileWatcher
+import csvLog
 
-voice = pyttsx3.init()
 
-
-init()
-
+voice = pyttsx3.init()  # text to speech
+init()  # colorama
 gpsWatcher = gpsFileWatcher
 
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
@@ -115,7 +113,7 @@ class PrintLines(LineReader):
             azimuth = 0
             if math.isnan(rxLat) or math.isnan(rxLon) or math.isnan(txLat)  or math.isnan(txLon) or lastFix > 60.0:
                 msg = "Missing GPS Fix.  Last fix was " + str(round(lastFix/60,1)) + " minutes ago!"
-                print(Fore.WHITE,msg )
+                print(Fore.RED,msg )
                 #voice.say(msg)
                 #voice.runAndWait()
                 frequency = 500  # lower tone

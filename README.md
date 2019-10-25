@@ -1,4 +1,4 @@
-# BalloonLaunch
+# HABTrack-python
 
 ## Requirements 
 
@@ -17,6 +17,7 @@
 * `sudo pip3 install gps`
 * `sudo gpsd /dev/serial0 -F /var/run/gpsd.sock`
 * `sudo pip3 install geographiclib`
+
 You may need to set your GPS serial port in /etc/defaults/GPSD
 Also, gpsctl -[nb] swithes between NEMA and binary for the UBlox M8
 Test with cpgs or gpsmon
