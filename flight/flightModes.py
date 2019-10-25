@@ -1,23 +1,23 @@
 # Mode Parameters
-Mode_GroundProximitry = False  #1
-Mode_Ascending = False #2
-Mode_Descending = False #4
-Mode_InFlight = False #8
-Mode_Stationary = False #16
-Mode_HasGpsFix = False #32
+GroundProximitry = False  #1
+Ascending = False #2
+Descending = False #4
+InFlight = False #8
+Stationary = False #16
+HasGpsFix = False #32
 
 def ModeBitArray():
     value = 0
-    if Mode_GroundProximitry:
+    if GroundProximitry:
         value += 1
-    if Mode_Ascending:
+    if Ascending:
         value += 2
-    if Mode_Descending:
+    if Descending:
         value += 4
-    if Mode_InFlight:
+    if InFlight:
         value += 8
-    if Mode_Stationary:
+    if Stationary:
         value += 16
-    if Mode_HasGpsFix:
+    if HasGpsFix:
         value += 32      
     return value

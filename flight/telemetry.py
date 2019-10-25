@@ -12,20 +12,63 @@ gpsd = None
 mode = flightModes
 bmp = bmp280
 
-
-
-def pressureAltitude(millibars):
-    # https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
-    # takes millibars, returns pressure altitude in feet.
-    return round(((1 - (millibars / 1013.25)** 0.190284)) * 145366.45, 0)
-
 maxAltPressure = 0 # feet
 maxAltGps = 0  # meters
-lastPressureAlt = pressureAltitude(bmp.sensor.pressure)
+verticalSpeedFps = 0
+
+lastTemperature  = 0
+lastPressure = 0
+lastPressureAlt = 0
 lastGoodGpsFix = datetime.now()
 lastGoodLat = math.nan
 lastGoodLon = math.nan
 lastGoodAlt = math.nan
+
+def update():
+    global lastGoodLat
+    global lastGoodLon 
+    global lastGoodAlt 
+    global lastGoodGpsFix 
+    global lastTemperature
+    currentLat = gpsd.fix.latitude
+    currentLon = gpsd.fix.longitude
+    currentAlt = gpsd.fix.altitude
+    if math.isnan(currentLat) or math.isnan(currentLon) or math.isnan(currentAlt):
+        mode.hasGpsFix = False
+    else:
+        mode.hasGpsFix = True
+        lastGoodLat = currentLat
+        lastGoodLon = currentLon
+        lastGoodAlt = currentAlt
+        lastGoodGpsFix = datetime.now()    
+        # Check Max GPS Alt
+        if lastGoodAlt > maxAltGps:
+            maxAltGps = lastGoodAlt 
+    
+    # Update pressure Alt
+    pressureAltitude()
+    lastTemperature = bmp.sensor.temperature
+
+def pressureAltitude():
+    # https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
+    # takes millibars, returns pressure altitude in feet.
+    global lastPressure
+    global lastPressureAlt
+    global maxAltPressure
+    lastPressure = bmp.sensor.pressure  # millibars
+    currentPressureAlt = round(((1 - (lastPressure / 1013.25)** 0.190284)) * 145366.45, 0)
+    if currentPressureAlt > maxAltPressure:
+        maxAltPressure = currentPressureAlt    
+
+    #MAJOR BUG HERE!  NEED TO GET CORRECT number of seconds since last update
+    LogFreqSeconds = 5
+
+    verticalSpeedFps = round((currentPressureAlt - lastPressureAlt) / LogFreqSeconds, 1) # feet per second
+    lastPressureAlt = currentPressureAlt
+    return currentPressureAlt
+
+def secondsSinceLastGoodFix():
+    return  round((datetime.now() - lastGoodGpsFix).total_seconds(), 1)  #LastFix (seconds since)
 
 # GPS monitoring Thread:
 #----------------------------------------------
