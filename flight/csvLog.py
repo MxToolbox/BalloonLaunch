@@ -1,3 +1,5 @@
+# writes CSV log data for flight app
+
 import os
 import csv
 from datetime import datetime, timedelta 

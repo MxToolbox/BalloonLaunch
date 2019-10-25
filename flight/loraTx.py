@@ -10,7 +10,7 @@ from serial.threaded import LineReader, ReaderThread
 import zlib
 
 TRANSMIT_FREQ = 5  # seconds
-values = [0]*17
+values = [0]*17  # These values get transmitted via compressed CSV
 
 
 parser = argparse.ArgumentParser(description='LoRa Radio mode sender.')
@@ -42,6 +42,7 @@ class PrintLines(LineReader):
     def connection_lost(self, exc):
         if exc:
             print(exc)
+        # todo:  make this more fault tollerant by attempting reconnect.
         print("port closed")
 
     def tx(self):

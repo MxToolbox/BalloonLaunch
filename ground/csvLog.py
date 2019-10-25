@@ -1,3 +1,5 @@
+# writes CSV log data for ground app
+
 import os
 import csv
 from datetime import datetime, timedelta 

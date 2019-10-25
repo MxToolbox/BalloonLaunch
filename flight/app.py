@@ -2,34 +2,24 @@ import os
 import time
 import math
 import logging
-import csvLog
-import gpsTrack
-import loraTx
 from datetime import datetime, timedelta 
 import bmp280
-bmp = bmp280
+import csvLog
+import telemetry
+import loraTx
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Starting data logger')
-
 
 def pressureAltitude(millibars):
     # https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
     # takes millibars, returns pressure altitude in feet.
     return round(((1 - (millibars / 1013.25)** 0.190284)) * 145366.45, 0)
 
-hasSetTime = False
-def setTimeFromGps(date_str):
-    global hasSetTime
-    if hasSetTime == False:
-        os.system('hwclock --set --date %s' % date_str)
-        print("hwclock set via GPS time: " + date_str)
-        hasSetTime = True
-
-tracker = gpsTrack
-telemetry = loraTx
-
+tracker = telemetry
+transmitter = loraTx
+bmp = bmp280
 
 maxAltPressure = 0 # feet
 maxAltGps = 0  # meters
@@ -37,9 +27,8 @@ maxAltGps = 0  # meters
 values = [0]*23
 headers = [0]*23
 headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "HDOP", "VDOP", "LastFix", "Mode"]
-formatStr = '| {0:>26} | {1:>6} | {2:>8} | {3:>8} | {4:>12} | {5:>10} | {6:>6} | {7:>6} | {8:>6} | {9:>6} | {10:>14} | {11:>14} | {12:>10} | {13:>10} | {14:>10} | {15:>10}'
-print(formatStr.format(*headers))
 csvLog.writeCsvLog(headers)
+
 LogFreqSeconds = 1
 
 lastPressureAlt = pressureAltitude(bmp.sensor.pressure)
@@ -50,8 +39,6 @@ lastGoodAlt = math.nan
 hasGpsFix = False
 while True:
     try:
-        #sense.set_pixel(0, 0, (0, 0, 255))
-
         currentTime = datetime.now()
         values[0] = str(currentTime)
         values[1] = round(bmp.sensor.temperature, 3)    # celsius
@@ -62,12 +49,8 @@ while True:
         values[4] = round(pressureAlt, 0) # feet
 
         values[5] = round((pressureAlt - lastPressureAlt) / LogFreqSeconds, 1) # feet per second
-        #orientation = metrics.orientation_degrees
+        #values[6] = pitch, values[7] = roll, values[8] = yaw
 
-
-        #values[6] = round(orientation["pitch"], 0)
-        #values[7] = round(orientation["roll"], 0)
-        #values[8] = round(orientation["yaw"], 0)
         currentLat = tracker.gpsd.fix.latitude
         currentLon = tracker.gpsd.fix.longitude
         currentAlt = tracker.gpsd.fix.altitude
@@ -95,7 +78,6 @@ while True:
         values[22] = 0  #Mode
 
         csvLog.writeCsvLog(values)
-        #print(formatStr.format(*values))
         i = 0
         for v in values:
             formatStr = '| {0:>15} | {1:>26} |'
@@ -104,7 +86,7 @@ while True:
         print('________________________________________________')
 
         lastPressureAlt = pressureAlt  # for calculating vertical 
-        telemetry.values = values
+        transmitter.values = values
         
         # Check Max Alt
         if values[12] > maxAltGps:
@@ -112,13 +94,7 @@ while True:
         if values[4] > maxAltPressure:
             maxAltPressure = values[4] 
 
-        #sense.clear()  # Strobe off
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)
-        #sense.clear(255,0,0)  # Flash RED on error
         time.sleep(1)
-        #sense.clear()  # Strobe off
-    #if tracker.gpsd.utc != '':
-    #    setTimeFromGps(tracker.gpsd.utc)
     time.sleep(LogFreqSeconds)
-    #sense.show_message("Hello world!")
