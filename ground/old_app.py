@@ -5,6 +5,10 @@ import time
 import traceback
 import math
 import numpy
+import serial
+import argparse 
+import codecs
+from serial.threaded import LineReader, ReaderThread
 from colorama import Fore, Back, Style, init
 import zlib
 from geographiclib.geodesic import Geodesic
@@ -13,13 +17,11 @@ import winsound  #windows only
 import pyttsx3
 import gpsFileWatcher
 import csvLog
-import loraRx
 
-receiver = loraRx
+
 voice = pyttsx3.init()  # text to speech
-gpsWatcher = gpsFileWatcher
-
 init()  # colorama
+gpsWatcher = gpsFileWatcher
 
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Initializing Ground Control')
@@ -38,12 +40,59 @@ headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed (
 colors = [Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE]
 csvLog.writeCsvLog(headers)
 
-# Poll for new data
-while True:
-    if receiver.dataReady:
+parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
+parser.add_argument('--radio', help="Serial port descriptor")
+parser.add_argument('--gps', help="Serial port descriptor")
+args = parser.parse_args()
+
+class PrintLines(LineReader):
+
+
+    def connection_made(self, transport):
+        print("connection made")
+        self.transport = transport
+        self.send_cmd('radio set freq 903500000') 
+        self.send_cmd('sys get ver')
+        self.send_cmd('radio get mod')
+        self.send_cmd('radio get freq')
+        self.send_cmd('radio get sf')        
+        self.send_cmd('mac pause')
+        self.send_cmd('radio set pwr 20')
+        
+      
+        self.send_cmd('radio rx 0')
+        self.send_cmd("sys set pindig GPIO10 0")
+
+    def handle_line(self, data):
+        global rxLat
+        global rxLon
+        global rxAlt 
+        global txLat
+        global txLon
+        global rssi
+        global rxPositionSet
+        if data == "ok" or data == 'busy':
+            return
+        if data == "radio_err":
+            self.send_cmd('radio rx 0')
+            return
+        self.send_cmd("sys set pindig GPIO10 1", delay=0)
+
+        # try to  parse & decode data 
+        try:     
+            parts = data.split(' ')
+            command = parts[0]
+            dataBytes = parts[2]     
+            dataStr = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
+            #print(dataStr)
+            values =   dataStr.split(',')
+        except:
+            rssi = data
+            print('INFO: ' + data)
+            return
+
         # Calc geo range / heading
         try:
-            values = receiver.values
             txAlt = round(((1 - (float(values[3]) / 1013.25)** 0.190284)) * 145366.45, 0)  # calc pressure alt from pressure
             values[4] = txAlt  #pressure alt (feet)
             txLat = float(values[10])
@@ -80,7 +129,7 @@ while True:
                 azimuth = 360 + azimuth
             values.append(distance)
             values.append(azimuth)
-            values.append(receiver.snr)
+            values.append(rssi)
             values.append(rxLat)
             values.append(rxLon)
             values.append(rxAlt)
@@ -95,21 +144,45 @@ while True:
             values.append(round(float(elevation),1))  #elevation
             values.append(int(los_range))  #los range accounting for elevation
 
-            csvLog.writeCsvLog(values)
-            winsound.Beep(frequency, duration)
-
-            # display output
-            print(' _____________________________________________________')
-            i = 0          
-            for v in values:
-                formatStr = '| {0:>20} | {1:<26} |'
-                print(colors[i] ,formatStr.format(headers[i],  v))
-                i = i + 1
-            print(' _____________________________________________________')
         except:
-            print("Exception")
-            logging.error("Exception occurred", exc_info=True)
-        finally:
-            receiver.dataReady = False        
-    else:
-        time.sleep(1)
+            print("Error calulating GEO data " + traceback.format_exc())
+
+
+        csvLog.writeCsvLog(values)
+        winsound.Beep(frequency, duration)
+
+        # display output
+        print(' _____________________________________________________')
+        i = 0          
+        for v in values:
+            formatStr = '| {0:>20} | {1:<26} |'
+            print(colors[i] ,formatStr.format(headers[i],  v))
+            #print(Style.RESET_ALL) 
+            i = i + 1
+        print(' _____________________________________________________')
+        print(str(len(data)) + " bytes")
+        time.sleep(.1)
+
+        try:
+            self.send_cmd("sys set pindig GPIO10 0", delay=1)
+            self.send_cmd('radio rx 0')
+            self.send_cmd('radio get snr')  # requires firmware 1.0.5
+        except:
+            print("Possible Access denied error while writing! Press ENTER to continue...")
+
+    def connection_lost(self, exc):
+        if exc:
+            print(exc)
+        print("port closed")
+
+    def send_cmd(self, cmd, delay=.5):
+        self.transport.write(('%s\r\n' % cmd).encode('UTF-8'))
+        time.sleep(delay)
+
+# Main loop
+ser = serial.Serial(args.radio, baudrate=57600)
+with ReaderThread(ser, PrintLines) as protocol:
+    while(1):
+        time.sleep(.1)
+        pass
+        
