@@ -39,10 +39,10 @@ def update():
     currentLon = gpsd.fix.longitude
     currentAlt = gpsd.fix.altitude
     if math.isnan(currentLat) or math.isnan(currentLon) or math.isnan(currentAlt):
-        fmode.hasGpsFix = False
+        fmode.HasGpsFix = False
         print("No Gps Fix, preserving last known fix.")
     else:
-        fmode.hasGpsFix = True
+        fmode.HasGpsFix = True
         lastGoodLat = round(currentLat, 4)
         lastGoodLon = round(currentLon, 4)
         lastGoodAlt = int(currentAlt)
@@ -50,7 +50,7 @@ def update():
         # Check Max GPS Alt
         if lastGoodAlt > maxAltGps:
             maxAltGps = lastGoodAlt 
-    print(fmode.hasGpsFix)            
+    print(fmode.HasGpsFix)            
     print("Flight Mode: " + str(fmode.GetModeBitArray()))
     # Update PressureAlt / Temp
     pressureAltitude()  
