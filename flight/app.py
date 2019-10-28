@@ -43,7 +43,7 @@ while True:
         values[19] = tracker.gpsd.hdop
         values[20] = tracker.gpsd.vdop
         values[21] = tracker.secondsSinceLastGoodFix()
-        values[22] = tracker.flightModes.GetModeBitArray() #Mode
+        values[22] = tracker.fmode.GetModeBitArray() #Mode
 
         csvLog.writeCsvLog(values)
 

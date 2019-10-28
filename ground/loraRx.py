@@ -7,7 +7,7 @@ import codecs
 import traceback
 import zlib
 from serial.threaded import LineReader, ReaderThread
-import telemetry
+
 
 values = [0]
 dataReady = False

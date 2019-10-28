@@ -6,10 +6,10 @@ from datetime import datetime, timedelta
 from gps import *
 import threading as thread
 import bmp280
-import flightModes
+import  flightModes 
 
 gpsd = None 
-#mode = flightModes
+fmode = flightModes.Modes()
 bmp = bmp280
 
 maxAltPressure = 0 # feet
@@ -33,16 +33,16 @@ def update():
     global lastGoodGpsFix 
     global lastTemperature
     global maxAltGps
+    global fmode
     lastUpdate = datetime.now()
-
     currentLat = gpsd.fix.latitude
     currentLon = gpsd.fix.longitude
     currentAlt = gpsd.fix.altitude
     if math.isnan(currentLat) or math.isnan(currentLon) or math.isnan(currentAlt):
-        flightModes.hasGpsFix = False
-        # This prevents overriding the last known Fix with NaN
+        fmode.hasGpsFix = False
+        print("No Gps Fix, preserving last known fix.")
     else:
-        flightModes.hasGpsFix = True
+        fmode.hasGpsFix = True
         lastGoodLat = round(currentLat, 4)
         lastGoodLon = round(currentLon, 4)
         lastGoodAlt = int(currentAlt)
@@ -50,26 +50,31 @@ def update():
         # Check Max GPS Alt
         if lastGoodAlt > maxAltGps:
             maxAltGps = lastGoodAlt 
-    
+    print(fmode.hasGpsFix)            
+    print("Flight Mode: " + str(fmode.GetModeBitArray()))
     # Update PressureAlt / Temp
     pressureAltitude()  
 
 def pressureAltitude():
     # https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
     # takes millibars, returns pressure altitude in feet.
-    global lastPressure
-    global lastPressureAlt
-    global maxAltPressure
-    global verticalSpeedFps
-    lastPressure = int(bmp.sensor.pressure)  # millibars
-    currentPressureAlt = round(((1 - (lastPressure / 1013.25)** 0.190284)) * 145366.45, 0)
-    if currentPressureAlt > maxAltPressure:
-        maxAltPressure = int(currentPressureAlt)
+    try:
+        global lastTemperature
+        global lastPressure
+        global lastPressureAlt
+        global maxAltPressure
+        global verticalSpeedFps
+        lastPressure = int(bmp.sensor.pressure)  # millibars
+        currentPressureAlt = round(((1 - (lastPressure / 1013.25)** 0.190284)) * 145366.45, 0)
+        if currentPressureAlt > maxAltPressure:
+            maxAltPressure = int(currentPressureAlt)
 
-    verticalSpeedFps = round((currentPressureAlt - lastPressureAlt) / secondsSinceLastUpdate(), 1) # feet per second
-    lastPressureAlt = int(currentPressureAlt)
-    lastTemperature = bmp.sensor.temperature
-    return currentPressureAlt
+        verticalSpeedFps = round((currentPressureAlt - lastPressureAlt) / secondsSinceLastUpdate(), 1) # feet per second
+        lastPressureAlt = int(currentPressureAlt)
+        lastTemperature = bmp.sensor.temperature
+        return currentPressureAlt
+    except:
+        print("Error in pressureAltitude()")
 
 def secondsSinceLastGoodFix():
     return  round((datetime.now() - lastGoodGpsFix).total_seconds(), 1)  #LastFix (seconds since)

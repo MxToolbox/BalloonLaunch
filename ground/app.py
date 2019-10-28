@@ -66,8 +66,6 @@ while True:
             if math.isnan(rxLat) or math.isnan(rxLon) or math.isnan(txLat)  or math.isnan(txLon) or lastFix > 60.0:
                 msg = "Missing GPS Fix.  Last fix was " + str(round(lastFix/60,1)) + " minutes ago!"
                 print(Fore.RED,msg )
-                #voice.say(msg)
-                #voice.runAndWait()
                 frequency = 500  # lower tone
                 duration = 350  # longer duration 
             else:                
