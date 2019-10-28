@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 import csvLog
 import telemetry
 import loraTx
+import sys
+sys.path.insert(1, 'common/')
+import flightModes
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')

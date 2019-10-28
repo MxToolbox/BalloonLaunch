@@ -6,8 +6,11 @@ from datetime import datetime, timedelta
 from gps import *
 import threading as thread
 import bmp280
-import  flightModes 
+sys.path.insert(1, '../common/')
+import flightModes
 
+
+GROUND_PROX_METERS = 600
 gpsd = None 
 fmode = flightModes.Modes()
 bmp = bmp280
@@ -50,6 +53,28 @@ def update():
         # Check Max GPS Alt
         if lastGoodAlt > maxAltGps:
             maxAltGps = lastGoodAlt 
+    
+    if (lastGoodAlt < GROUND_PROX_METERS):
+        fmode.GroundProximity = True
+    else:
+        fmode.GroundProximity = False
+
+    if verticalSpeedFps > 0:
+        fmode.Ascending = True
+        fmode.Descending = False
+        fmode.Stationary = False
+    elif verticalSpeedFps < 0:
+        fmode.Ascending = False
+        fmode.Descending = True
+        fmode.Stationary = False
+    else:
+        fmode.Ascending = False
+        fmode.Descending = False
+        fmode.Stationary = True           
+    
+
+
+
     print(fmode.HasGpsFix)            
     print("Flight Mode: " + str(fmode.GetModeBitArray()))
     # Update PressureAlt / Temp

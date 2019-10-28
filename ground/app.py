@@ -10,21 +10,22 @@ import zlib
 from geographiclib.geodesic import Geodesic
 import logging
 import winsound  #windows only
-import pyttsx3
 import gpsFileWatcher
 import csvLog
 import loraRx
+sys.path.insert(1, '../common/')
+import flightModes
+import voiceStatus
 
 receiver = loraRx
-voice = pyttsx3.init()  # text to speech
 gpsWatcher = gpsFileWatcher
-
+fmode = flightModes.Modes()
+voice = voiceStatus
 init()  # colorama
 
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Initializing Ground Control')
-voice.say('Initializing Ground Control')
-voice.runAndWait()
+
 
 rxPositionSet = False
 rxLat = 30.4316015
@@ -55,6 +56,11 @@ while True:
                 rxLon = txLon
                 rxAlt = txAlt
                 print("Receiver position synced with transmitter position: " + str(rxLat) + ' , ' + str(rxLon) )
+
+            # Decode and output mode status
+            fmode.SetModeBitArray(values[22])
+            print(fmode.StatusMessage())
+            voiceStatus.engine.say(fmode.StatusMessage())
 
             rxLat = round(gpsWatcher.latitude,6)  # Geo from local GPS on transer device
             rxLon = round(gpsWatcher.longitude,6)
