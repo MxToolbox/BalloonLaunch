@@ -8,7 +8,7 @@ class _TTS:
                 self.engine = pyttsx3.init()
 
         def start(self,text_):
-                self.engine.setProperty('rate', 200)
+                self.engine.setProperty('rate', 190)
                 voices = self.engine.getProperty('voices')       #getting details of current voice
                 #self.engine.setProperty('voice', voices[0].id)   #male
                 self.engine.setProperty('voice', voices[1].id)    #female

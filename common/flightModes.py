@@ -43,13 +43,12 @@ class Modes:
 
     def StatusMessage(self, altitudeMeters, rateOfClimbMeters):
         msg = ""
-        verticalPosition = ""
-        if altitudeMeters.isnumeric and rateOfClimbMeters.isnumeric:
+        verticalPosition = " no altitude reading."
+        try:
             climb = int(float(rateOfClimbMeters))
             verticalPosition = str(altitudeMeters) + " meters at " + str(climb) + " meters per second."
-        else:
-            verticalPosition = " no altitude reading."
-            
+        except:
+            print("Invalid GPS altitude or climb indication.")     
 
         if self.GroundProximity:
             msg = msg + " Ground Proximity "

@@ -28,6 +28,28 @@ lastGoodLon = math.nan
 lastGoodAlt = math.nan
 
 lastUpdate = datetime.now()
+IsArmed = True
+THRESHOLD_ALTITUDE_METERS = 300  # arm once above this altitude, alarm after arming when falls below this altitude
+def IsGroundAlarm(GpsAltitudeMeters,PressureAltitudeMeters):
+	global IsArmed
+	altMeters = 0 
+	try:
+		altMeters = int(GpsAltitudeMeters)
+	except:
+		try:
+			altMeters = int(PressureAltitudeMeters)
+		except:
+			print("Unable to get altitude from GPS or altimeter!")
+
+	if altMeters > THRESHOLD_ALTITUDE_METERS:
+		IsArmed = True
+	if IsArmed and altMeters < THRESHOLD_ALTITUDE_METERS:
+		print("Gound Alarm")
+		return True
+	else:
+		return False
+
+
 def update():
     global lastUpdate 
     global lastGoodLat
@@ -36,6 +58,8 @@ def update():
     global lastGoodGpsFix 
     global lastTemperature
     global maxAltGps
+    global lastPressureAlt
+    global verticalSpeedFps
     global fmode
     lastUpdate = datetime.now()
     currentLat = gpsd.fix.latitude
@@ -54,10 +78,8 @@ def update():
         if lastGoodAlt > maxAltGps:
             maxAltGps = lastGoodAlt 
     
-    if (lastGoodAlt < GROUND_PROX_METERS):
-        fmode.GroundProximity = True
-    else:
-        fmode.GroundProximity = False
+    fmode.GroundProximity = IsGroundAlarm(lastGoodAlt, lastPressureAlt / 3.28)
+    #fmode.Stationary = fmode.GroundProximity &  verticalSpeedFps == 0
 
     if verticalSpeedFps > 0:
         fmode.Ascending = True
@@ -71,12 +93,7 @@ def update():
         fmode.Ascending = False
         fmode.Descending = False
         fmode.Stationary = True           
-    
 
-
-
-    print(fmode.HasGpsFix)            
-    print("Flight Mode: " + str(fmode.GetModeBitArray()))
     # Update PressureAlt / Temp
     pressureAltitude()  
 
