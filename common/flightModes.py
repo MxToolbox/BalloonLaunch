@@ -1,3 +1,4 @@
+import math
 # Mode Parameters stored in a bit array  (Set/Get)
 class Modes:
 
@@ -40,19 +41,24 @@ class Modes:
         if value & 32 > 0:
             self.HasGpsFix = True                                        
 
-    def StatusMessage(self):
+    def StatusMessage(self, altitudeMeters, rateOfClimbMeters):
         msg = ""
-        if self.InFlight:
-            if self.Ascending:
-                msg = msg + " Ascending "
-            elif self.Descending:
-                msg = msg + " Descending "
-        elif self.Stationary:
-            msg = msg + "  Stationary "
-        if self.GroundProximity == True:
-            msg = msg + " Ground Proximity "        
+        verticalPosition = ""
+        if altitudeMeters.isnumeric and rateOfClimbMeters.isnumeric:
+            climb = int(float(rateOfClimbMeters))
+            verticalPosition = str(altitudeMeters) + " meters at " + str(climb) + " meters per second."
+        else:
+            verticalPosition = " no altitude reading."
+            
+
+        if self.GroundProximity:
+            msg = msg + " Ground Proximity "
+        if self.Ascending:
+            msg = msg + " Ascending through " + verticalPosition
+        elif self.Descending:
+            msg = msg + " Descending through " + verticalPosition  
         if self.HasGpsFix == False:
-            msg = msg + " No Gps Fix. "
+            msg = msg + " No Gps Fix, "
         return msg
 
 

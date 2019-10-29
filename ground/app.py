@@ -49,7 +49,11 @@ while True:
             values[4] = txAlt  #pressure alt (feet)
             txLat = float(values[10])
             txLon = float(values[11])
+
+            txAltGPS = values[12]
+            txClimbGPS = values[14]              
             lastFix = float(values[21])
+            
             if (rxPositionSet == False):
                 rxPositionSet = True
                 rxLat = txLat
@@ -59,8 +63,9 @@ while True:
 
             # Decode and output mode status
             fmode.SetModeBitArray(values[22])
-            print(fmode.StatusMessage())
-            voiceStatus.engine.say(fmode.StatusMessage())
+            statusMessage = fmode.StatusMessage(txAltGPS,txClimbGPS)
+            print(statusMessage)
+            voice.CurrentMessage = statusMessage
 
             rxLat = round(gpsWatcher.latitude,6)  # Geo from local GPS on transer device
             rxLon = round(gpsWatcher.longitude,6)
