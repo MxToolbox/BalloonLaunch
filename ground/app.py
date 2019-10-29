@@ -17,6 +17,7 @@ sys.path.insert(1, '../common/')
 import flightModes
 import voiceStatus
 
+
 receiver = loraRx
 gpsWatcher = gpsFileWatcher
 fmode = flightModes.Modes()

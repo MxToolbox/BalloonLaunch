@@ -9,6 +9,7 @@ import loraTx
 import sys
 sys.path.insert(1, 'common/')
 import flightModes
+import raspistills  
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')

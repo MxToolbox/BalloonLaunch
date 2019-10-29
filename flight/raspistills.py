@@ -1,12 +1,20 @@
 import os
 import time
+from datetime import datetime, timedelta 
+import threading as thread
 
-FRAMES = 1000
-TIMEBETWEEN = 10
 
-frameCount = 0
-while frameCount < FRAMES:
-    imageNumber = str(frameCount).zfill(7)
-    os.system("raspistill -o image%s.jpg"%(imageNumber))
-    frameCount += 1
-    time.sleep(TIMEBETWEEN - 6) #Takes roughly 6 seconds to take a picture
+def TimeLapse():
+    LOCATION = os.path.dirname(os.path.abspath(__file__))
+    MAXFRAMES = 2000
+    TIMEBETWEEN = 10 #seconds
+    frameCount = 0
+    while frameCount < MAXFRAMES:
+        imageFile = LOCATION + "/images/image-" + str(datetime.now()).replace(':', '-').replace(' ', '-') + ".jpg"
+        os.system("raspistill -o " + imageFile)
+        frameCount += 1
+        time.sleep(TIMEBETWEEN - 6) #Takes roughly 6 seconds to take a picture
+
+camera_thread=thread.Thread(target=TimeLapse) 
+camera_thread.setDaemon(True)                  
+camera_thread.start()    
