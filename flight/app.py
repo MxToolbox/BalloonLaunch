@@ -5,19 +5,22 @@ import logging
 from datetime import datetime, timedelta 
 import csvLog
 import telemetry
-import loraTx
+import loraFlight
 import sys
 sys.path.insert(1, 'common/')
 import flightModes
 import raspistills  
 import proximityAlarm
+import cutdown
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
-logging.basicConfig(level=logging.DEBUG,filename='/var/log/mdm2.log', format='%(process)d-%(levelname)s-%(message)s')
-logging.info('Starting data logger')
+#logging.basicConfig(level=logging.DEBUG,filename='mdm-2.log', format='%(process)d-%(levelname)s-%(message)s')
+logging.basicConfig(level=logging.DEBUG,filename='mdm-2.log')
+logger = logging.getLogger()
+logger.warning('Starting Flight Computer')
 
 tracker = telemetry
-transmitter = loraTx
+transmitter = loraFlight
 
 values = [0]*23
 headers = [0]*23
@@ -26,7 +29,15 @@ csvLog.writeCsvLog(headers)
 
 LogFreqSeconds = 5
 while True:
-    try:
+    try:        
+        # Check for any new commands from Ground
+        if loraFlight.newGroundCommand:
+            command = loraFlight.groundCommand
+            loraFlight.groundCommand = ""       #reset semaphore and value
+            loraFlight.newGroundCommand = False
+            if command == "cutdown":
+                cutdown.Energize(tracker.fmode.GroundProximity)
+
         tracker.update()
         values[0] = str(datetime.now())
         values[1] = round(tracker.lastTemperature, 2)    # celsius

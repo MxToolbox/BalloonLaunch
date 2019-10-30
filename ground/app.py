@@ -12,13 +12,13 @@ import logging
 import winsound  #windows only
 import gpsFileWatcher
 import csvLog
-import loraRx
+import loraGround
 sys.path.insert(1, '../common/')
 import flightModes
 import voiceStatus
 
 
-receiver = loraRx
+receiver = loraGround
 gpsWatcher = gpsFileWatcher
 fmode = flightModes.Modes()
 voice = voiceStatus
@@ -36,7 +36,7 @@ txLat = 0.0
 txLon = 0.0
 rssi = ""
 
-headers = ["time","temp","humidity","pressure","pressure alt (ft)","vert speed (ft/s)","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed (m/s)", "gps climb (m/s)", "gps track", "gps time","maxAltGps (m)","maxAltPressure (ft)", "HDOP", "VDOP", "LastFix", "Mode", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
+headers = ["time","temp","humidity","pressure","pressure alt (m)","vert speed (m/s)","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed (m/s)", "gps climb (m/s)", "gps track", "gps time","maxAltGps (m)","maxAltPressure (ft)", "HDOP", "VDOP", "LastFix", "Mode", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
 colors = [Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE]
 csvLog.writeCsvLog(headers)
 
@@ -46,7 +46,7 @@ while True:
         # Calc geo range / heading
         try:
             values = receiver.values
-            txAlt = round(((1 - (float(values[3]) / 1013.25)** 0.190284)) * 145366.45, 0)  # calc pressure alt from pressure
+            txAlt = round((((1 - (float(values[3]) / 1013.25)** 0.190284)) * 145366.45) / 3.28, 0)  # calc pressure alt from pressure
             values[4] = txAlt  #pressure alt (feet)
             txLat = float(values[10])
             txLon = float(values[11])
@@ -116,6 +116,8 @@ while True:
                 print(colors[i] ,formatStr.format(headers[i],  v))
                 i = i + 1
             print(' _____________________________________________________')
+
+            loraGround.CommandToSend = "Hello from Earth."
         except:
             print("Exception")
             logging.error("Exception occurred", exc_info=True)

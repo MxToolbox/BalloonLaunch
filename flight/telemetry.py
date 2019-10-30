@@ -78,7 +78,7 @@ def update():
         if lastGoodAlt > maxAltGps:
             maxAltGps = lastGoodAlt 
     
-    fmode.GroundProximity = IsGroundAlarm(lastGoodAlt, lastPressureAlt / 3.28)
+    fmode.GroundProximity = IsGroundAlarm(lastGoodAlt, lastPressureAlt)
     #fmode.Stationary = fmode.GroundProximity &  verticalSpeedFps == 0
 
     if verticalSpeedFps > 0:
@@ -107,7 +107,7 @@ def pressureAltitude():
         global maxAltPressure
         global verticalSpeedFps
         lastPressure = int(bmp.sensor.pressure)  # millibars
-        currentPressureAlt = round(((1 - (lastPressure / 1013.25)** 0.190284)) * 145366.45, 0)
+        currentPressureAlt = round((((1 - (lastPressure / 1013.25)** 0.190284)) * 145366.45) / 3.28, 0)
         if currentPressureAlt > maxAltPressure:
             maxAltPressure = int(currentPressureAlt)
 
