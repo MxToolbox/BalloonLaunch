@@ -13,7 +13,7 @@ import raspistills
 import proximityAlarm
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
-logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
+logging.basicConfig(level=logging.DEBUG,filename='/var/log/mdm2.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Starting data logger')
 
 tracker = telemetry
@@ -28,9 +28,6 @@ LogFreqSeconds = 5
 while True:
     try:
         tracker.update()
-
-        #proximityAlarm.GpsAltitudeMeters = tracker.gpsd.fix.altitude
-        #proximityAlarm.PressureAltitudeMeters = tracker.lastPressureAlt / 3.28
         values[0] = str(datetime.now())
         values[1] = round(tracker.lastTemperature, 2)    # celsius
         values[2] = round(0, 0) # Humidity

@@ -2,14 +2,16 @@
 import RPi.GPIO as GPIO
 import time
 import threading as thread
+import logging
+import traceback
 import math
 
-BuzzerPin = 13    # pin15
+BuzzerPin = 27    # pin13  GPIO 27
 IsGroundAlarm = False
 
 def setup(pin):
 	global BuzzerPin
-	GPIO.setmode(GPIO.BOARD)       # Numbers GPIOs by physical location
+	GPIO.setmode(GPIO.BCM)       # Numbers GPIOs by physical location
 	GPIO.setup(BuzzerPin, GPIO.OUT)
 	GPIO.output(BuzzerPin, GPIO.LOW)
 	time.sleep(.1)
@@ -34,19 +36,22 @@ def monitorAlarm():
 	global IsGroundAlarm
 	try:
 		while True:
-			setup(BuzzerPin)
+			
 			if IsGroundAlarm:
+				setup(BuzzerPin)
 				beep(.1)
-			else:
 				destroy()
-			time.sleep(.1)
+			else:
+				time.sleep(.1)
 	except:
+		logging.error("Exception occurred", exc_info=True)
 		destroy()
 
 print("Iniitializing Ground Proxmity Alarm...")
 alarm_thread=thread.Thread(target=monitorAlarm) 
 alarm_thread.setDaemon(True)                  
 alarm_thread.start()
+# IsGroundAlarm = True for testing.
 
 
 if __name__ == '__main__':     # Program start from here

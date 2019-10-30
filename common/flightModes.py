@@ -46,12 +46,12 @@ class Modes:
         verticalPosition = " no altitude reading."
         try:
             climb = int(float(rateOfClimbMeters))
-            verticalPosition = str(altitudeMeters) + " meters at " + str(climb) + " meters per second."
+            verticalPosition = str(altitudeMeters) + " meters at " + str(climb) + " meters per second,"
         except:
             print("Invalid GPS altitude or climb indication.")     
 
         if self.GroundProximity:
-            msg = msg + " Ground Proximity "
+            msg = msg + " Ground Proximity. "
         if self.Ascending:
             msg = msg + " Ascending through " + verticalPosition
         elif self.Descending:
@@ -59,8 +59,6 @@ class Modes:
         if self.HasGpsFix == False:
             msg = msg + " No Gps Fix, "
         return msg
-
-
 
 # Test Cases
 #SetModeBitArray(35)

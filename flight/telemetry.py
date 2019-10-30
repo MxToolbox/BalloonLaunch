@@ -28,8 +28,8 @@ lastGoodLon = math.nan
 lastGoodAlt = math.nan
 
 lastUpdate = datetime.now()
-IsArmed = True
-THRESHOLD_ALTITUDE_METERS = 300  # arm once above this altitude, alarm after arming when falls below this altitude
+IsArmed = False
+THRESHOLD_ALTITUDE_METERS = 600  # arm once above this altitude, alarm after arming when falls below this altitude
 def IsGroundAlarm(GpsAltitudeMeters,PressureAltitudeMeters):
 	global IsArmed
 	altMeters = 0 
