@@ -99,7 +99,7 @@ while True:
             elevation = 0
             los_range = 0
             if distance > 0:
-                altDeltaMeters = (txAlt / 3.28) - rxAlt  #txAlt is pressure alt in feet!
+                altDeltaMeters = txAlt - rxAlt  #txAlt is pressure alt is now in METERS!
                 elevation = str(int((numpy.arctan(altDeltaMeters / distance)) * 57.2958))  #radians to degrees
                 los_range = math.sqrt(altDeltaMeters**2 + distance**2)
             values.append(round(float(elevation),1))  #elevation
@@ -117,6 +117,7 @@ while True:
                 i = i + 1
             print(' _____________________________________________________')
 
+            # Set value to send to Flight Computer
             loraGround.CommandToSend = "Hello from Earth."
         except:
             print("Exception")
@@ -124,4 +125,4 @@ while True:
         finally:
             receiver.dataReady = False        
     else:
-        time.sleep(1)
+        time.sleep(.1)

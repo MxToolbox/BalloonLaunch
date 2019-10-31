@@ -18,6 +18,7 @@ groundCommand = ""
 
 def receiveCommand(data):
     global newGroundCommand
+    global groundCommand
     groundCommand = data
     newGroundCommand = True
 
@@ -25,8 +26,7 @@ parser = argparse.ArgumentParser(description='LoRa Radio mode sender.')
 parser.add_argument('port', help="Serial port descriptor")
 args = parser.parse_args()
 
-class RxFlight(LineReader):
-
+class ComFlight(LineReader):
 
     def connection_made(self, transport):
         print("connection made")
@@ -52,20 +52,20 @@ class RxFlight(LineReader):
         
         # try to parse & decode command from ground 
         try:
+           
             parts = data.split(' ')
             if len(parts) > 2 :
+                print("Rx Data From Gound: " + data)
                 command = parts[0]
                 if command == "radio_rx":
                     self.send_cmd("sys set pindig GPIO10 1", delay=0) 
                     dataBytes = parts[2]     
                     print("Rx " + str(len(data)) + " bytes: " + str(dataBytes)) 
                     commandStr = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
-                    #self.send_cmd('radio get snr')  # requires firmware 1.0.5 for RSSI
                     print("RECV COMMAND: %s" % commandStr)
                     receiveCommand(commandStr)
             else:
                 print('INFO: ' + data)
-                snr = data  # probably SNR
         except:
             print('ERROR: ' + data)
             logging.error("Exception occurred", exc_info=True)
@@ -107,12 +107,12 @@ class RxFlight(LineReader):
         time.sleep(delay)
 
 def sendTelemetry():
-    with ReaderThread(ser, RxFlight) as protocol:
+    with ReaderThread(ser, ComFlight) as protocol:
         count = 0
         while(1):
             time.sleep(.1)
             count = count + 1
-            if count * 10 > TRANSMIT_FREQ:
+            if count * 0.1 > TRANSMIT_FREQ:
                 protocol.tx()
                 count = 0
             #protocol.tx()
@@ -123,15 +123,3 @@ ser = serial.Serial(args.port, baudrate=57600)
 telemetry_thread=thread.Thread(target=sendTelemetry) 
 telemetry_thread.setDaemon(True)                  
 telemetry_thread.start()
-
-def receive():
-        ser = serial.Serial(args.radio, baudrate=57600)
-        with ReaderThread(ser, RxFlight) as protocol:
-            while(1):
-                time.sleep(.1)
-                pass        
-
-#print("Listening for LoRa Ground Commands...")
-#commands_thread=thread.Thread(target=receive) 
-#commands_thread.setDaemon(True)                  
-#commands_thread.start()

@@ -29,7 +29,7 @@ def receiveValues(dataValues):
 class RxGround(LineReader):
 
     def connection_made(self, transport):
-        print("connection made")
+        #print("connection made")
         self.transport = transport
         self.send_cmd('radio set freq 903500000') 
         self.send_cmd('sys get ver')
@@ -40,6 +40,7 @@ class RxGround(LineReader):
         self.send_cmd('radio set pwr 20')
         self.send_cmd('radio rx 0')
         self.send_cmd("sys set pindig GPIO10 0")
+        self.frame_count = 0
 
     def handle_line(self, data):
         #print(data)
@@ -76,15 +77,8 @@ class RxGround(LineReader):
         self.send_cmd('radio rx 0')
 
         if not sendingCommand == "":
-            time.sleep(.3)
-            commandBin = zlib.compress(str.encode(sendingCommand)).hex()
-            msg = 'radio tx ' + commandBin
-            self.send_cmd("sys set pindig GPIO11 1")
-            print("SEND: %s bytes " % str(len(commandBin)) + commandBin + " " + sendingCommand)
-            self.send_cmd(msg)
+            self.tx(sendingCommand)
             sendingCommand = ""  #clear command
-            time.sleep(.5)
-            self.send_cmd("sys set pindig GPIO11 0")
 
     def connection_lost(self, exc):
         if exc:
@@ -92,12 +86,18 @@ class RxGround(LineReader):
         print("port closed")
 
     def tx(self, command):
-        self.send_cmd("sys set pindig GPIO11 1")
-        txmsg = 'radio tx ' + command
-        self.send_cmd(txmsg)
-        time.sleep(.3)
-        self.send_cmd("sys set pindig GPIO11 0")
-        #self.frame_count = self.frame_count + 1
+        try:
+            time.sleep(.3)
+            self.send_cmd("sys set pindig GPIO11 1")
+            commandBin = zlib.compress(str.encode(command)).hex()
+            txmsg = 'radio tx ' + commandBin
+            print("SEND: %s bytes " % str(len(commandBin)) + commandBin + " " + command)
+            self.send_cmd(txmsg)
+            #time.sleep(.3)
+            self.send_cmd("sys set pindig GPIO11 0")
+            self.frame_count = self.frame_count + 1
+        except:
+            logging.error("Exception occurred", exc_info=True)
 
     def send_cmd(self, cmd, delay=.5):
         #self.transport.write(('%s\r\n' % cmd).encode('UTF-8'))
