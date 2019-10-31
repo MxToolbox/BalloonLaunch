@@ -1,3 +1,4 @@
+import sys
 import os
 import time
 import math
@@ -5,13 +6,13 @@ import logging
 from datetime import datetime, timedelta 
 import csvLog
 import telemetry
-import loraFlight
-import sys
 sys.path.insert(1, 'common/')
+import loraRadio
 import flightModes
 import raspistills  
 import proximityAlarm
 import cutdown
+import codecs
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
 #logging.basicConfig(level=logging.DEBUG,filename='mdm-2.log', format='%(process)d-%(levelname)s-%(message)s')
@@ -20,7 +21,7 @@ logger = logging.getLogger()
 logger.warning('Starting Flight Computer')
 
 tracker = telemetry
-transmitter = loraFlight
+radio = loraRadio
 
 values = [0]*23
 headers = [0]*23
@@ -31,10 +32,10 @@ LogFreqSeconds = 5
 while True:
     try:        
         # Check for any new commands from Ground
-        if loraFlight.newGroundCommand:
-            command = loraFlight.groundCommand
-            loraFlight.groundCommand = ""       #reset semaphore and value
-            loraFlight.newGroundCommand = False
+        if loraRadio.ReceivedDataReady:
+            command = loraRadio.ReceivedData
+            loraRadio.ReceivedData = ""       #reset semaphore and value
+            loraRadio.ReceivedDataReady = False
             if command == "cutdown":
                 cutdown.Energize(tracker.fmode.GroundProximity)
 
@@ -72,7 +73,18 @@ while True:
             i = i + 1
         print('________________________________________________')
 
-        transmitter.values = values
+        # delete some data to reduce packet size.
+        values[2] = ''
+        values[4] = ''
+        values[6] = ''
+        values[7] = ''
+        values[8] = ''
+        values[9] = ''
+        values[16] = ''
+        valuesStr = ",".join(map(str,values))
+
+        # queue for transmission
+        loraRadio.DataToTransmit = valuesStr
 
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)

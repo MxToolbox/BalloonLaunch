@@ -12,13 +12,14 @@ import logging
 import winsound  #windows only
 import gpsFileWatcher
 import csvLog
-import loraGround
 sys.path.insert(1, '../common/')
+import loraRadio
 import flightModes
 import voiceStatus
 
 
-receiver = loraGround
+radio = loraRadio
+radio.RequestSNR = True
 gpsWatcher = gpsFileWatcher
 fmode = flightModes.Modes()
 voice = voiceStatus
@@ -42,10 +43,13 @@ csvLog.writeCsvLog(headers)
 
 # Poll for new data
 while True:
-    if receiver.dataReady:
+    if radio.ReceivedDataReady:
         # Calc geo range / heading
         try:
-            values = receiver.values
+            values = radio.ReceivedData.split(',')
+            radio.ReceivedData = ""  # clear the data
+            radio.ReceivedDataReady = False
+
             txAlt = round((((1 - (float(values[3]) / 1013.25)** 0.190284)) * 145366.45) / 3.28, 0)  # calc pressure alt from pressure
             values[4] = txAlt  #pressure alt (feet)
             txLat = float(values[10])
@@ -90,7 +94,7 @@ while True:
                 azimuth = 360 + azimuth
             values.append(distance)
             values.append(azimuth)
-            values.append(receiver.snr)
+            values.append(radio.SNR)
             values.append(rxLat)
             values.append(rxLon)
             values.append(rxAlt)
@@ -118,11 +122,9 @@ while True:
             print(' _____________________________________________________')
 
             # Set value to send to Flight Computer
-            loraGround.CommandToSend = "Hello from Earth."
+            #radio.DataToTransmit = "Hello from Earth."
         except:
             print("Exception")
             logging.error("Exception occurred", exc_info=True)
-        finally:
-            receiver.dataReady = False        
     else:
         time.sleep(.1)

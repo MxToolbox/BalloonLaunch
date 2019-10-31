@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 #https://ww1.microchip.com/downloads/en/DeviceDoc/40001784B.pdf
 
+# Thread about Rx window and watchdog timeouts....
+#https://www.microchip.com/forums/m977377.aspx
+
 import time
 import sys
 import serial
@@ -32,30 +35,28 @@ args = parser.parse_args()
 class Radio(LineReader):
 
     def connection_made(self, transport):
-        #print("connection made")
+        print("connection made")
         self.transport = transport
-        self.send_cmd('radio set freq 903500000') 
+        self.send_cmd("sys set pindig GPIO11 0")
+        self.send_cmd('radio set freq 903500000')        
         self.send_cmd('sys get ver')
         self.send_cmd('radio get mod')
         self.send_cmd('radio get freq')
-        self.send_cmd('radio get sf')        
+        self.send_cmd('radio get sf')
         self.send_cmd('mac pause')
         self.send_cmd('radio set pwr 20')
-        self.send_cmd('radio rx 0')
-        self.send_cmd("sys set pindig GPIO10 0")
+        self.send_cmd('radio rx 1')  # set receive window to 1 second
+        self.send_cmd("sys set pindig GPIO11 0")
         self.frame_count = 0
 
     def handle_line(self, data):
         print(data)
-        global snr
         if data == "ok" or data == 'busy':
             return
         if data == "radio_err":
             self.send_cmd('radio rx 0')
-            return
-        self.send_cmd("sys set pindig GPIO10 1", delay=0)
-        sendingCommand = ""
-
+            return            
+        
         # Decode RxData
         try:
             parts = data.split(' ')
@@ -77,18 +78,15 @@ class Radio(LineReader):
         except:
             print('ERROR: ' + data)
             logging.error("Exception occurred", exc_info=True)
-            return   
-
+            return           
         self.send_cmd("sys set pindig GPIO10 0", delay=1)
-        self.send_cmd('radio rx 0')
+        #self.send_cmd('radio rx 0')  
 
-        if not sendingCommand == "":
-            self.tx(sendingCommand)
-            sendingCommand = ""  #clear command
 
     def connection_lost(self, exc):
         if exc:
             print(exc)
+        # todo:  make this more fault tolerant by attempting reconnect.
         print("port closed")
 
     def tx(self):
@@ -106,20 +104,15 @@ class Radio(LineReader):
         self.write_line(cmd)
         time.sleep(delay)
 
-snr = -99
-parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
-parser.add_argument('--radio', help="Serial port descriptor")
-#parser.add_argument('--gps', help="Serial port descriptor")
-args = parser.parse_args()
-
 def Transmit():
     with ReaderThread(ser, Radio) as protocol:
         while(1):
             if not DataToTransmit == "":
                 protocol.tx()
-            time.sleep(.1)   
+            time.sleep(.1)
 
 print("Iniitializing LoRa Radio...")
-telemetry_thread=thread.Thread(target=receive) 
+ser = serial.Serial(args.radio, baudrate=57600)
+telemetry_thread=thread.Thread(target=Transmit) 
 telemetry_thread.setDaemon(True)                  
 telemetry_thread.start()
