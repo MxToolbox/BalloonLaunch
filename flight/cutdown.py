@@ -4,8 +4,8 @@ import time
 import logging
 import traceback
 
-CutDownPin = 10    # pin19 GPIO 10
-CutDuration = 10   # number of seconds to energize the hot wire
+CutDownPin = 9    # pin 21 GPIO 9
+CutDuration = 5   # number of seconds to energize the hot wire
 IsArmed = False
 
 def Energize(IsGroundProximity):
@@ -21,9 +21,9 @@ def Energize(IsGroundProximity):
         logging.warning("Beginning Cutdown!")
         GPIO.setmode(GPIO.BCM)       # Numbers GPIOs by physical location
         GPIO.setup(CutDownPin, GPIO.OUT)
-        GPIO.output(CutDownPin, GPIO.LOW)
-        time.sleep(CutDuration)
         GPIO.output(CutDownPin, GPIO.HIGH)
+        time.sleep(CutDuration)
+        GPIO.output(CutDownPin, GPIO.LOW)
     except:
         logging.critical("Cutdown error", exc_info=True)
     finally:
@@ -32,7 +32,7 @@ def Energize(IsGroundProximity):
 
 def destroy():
 	try:
-		GPIO.output(BuzzerPin, GPIO.HIGH)
+		GPIO.output(CutDownPin, GPIO.HIGH)
 		GPIO.cleanup()                     # Release resource
 	except:
 		logging.error("Cleanup error", exc_info=True)
@@ -41,6 +41,6 @@ def destroy():
 if __name__ == '__main__':     # Program start from here
 	try:
 		IsArmed = True
-		CutDown(True)
+		Energize(True)
 	except KeyboardInterrupt:  # When 'Ctrl+C' is pressed, the child program destroy() will be  executed.
 		destroy()
