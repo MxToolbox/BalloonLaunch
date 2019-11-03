@@ -21,7 +21,7 @@ ReceivedDataReady = False
 ReceivedData = ""
 RequestSNR = False
 SNR = ""
-
+DefaultReceive = False
 def receiveCommand(RxData):
     global ReceivedDataReady
     global ReceivedData
@@ -33,8 +33,9 @@ parser.add_argument('--radio', help="Serial port descriptor")
 args = parser.parse_args()
 
 class Radio(LineReader):
-
+    
     def connection_made(self, transport):
+        global DefaultReceive
         print("connection made")
         self.transport = transport
         self.send_cmd("sys set pindig GPIO11 0")
@@ -45,12 +46,21 @@ class Radio(LineReader):
         self.send_cmd('radio get sf')
         self.send_cmd('mac pause')
         self.send_cmd('radio set pwr 20')
-        self.send_cmd('radio rx 1')  # set receive window to 1 second
+        if DefaultReceive:
+            self.send_cmd('radio rx 0')  # set continuous receive
         self.send_cmd("sys set pindig GPIO11 0")
         self.frame_count = 0
 
+    def RxStart(self):
+        self.send_cmd('radio rx 0',2)  # set continous receive
+
+    def RxStop(self):
+        self.send_cmd('radio rxstop',2)  # end continous receive        
+
     def handle_line(self, data):
-        print(data)
+        global DefaultReceive
+        global SNR
+        #print(data)
         if data == "ok" or data == 'busy':
             return
         if data == "radio_err":
@@ -66,9 +76,8 @@ class Radio(LineReader):
                 if command == "radio_rx":
                     self.send_cmd("sys set pindig GPIO10 1", delay=0) 
                     dataBytes = parts[2]     
-                    print("Rx " + str(len(data)) + " bytes: " + str(dataBytes)) 
                     RxData = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
-                    print("RECV COMMAND: %s" % RxData)
+                    print("Rx " + str(len(data)) + " bytes: " + RxData)
                     receiveCommand(RxData)
                     if RequestSNR:
                         self.send_cmd('radio get snr')  # requires firmware 1.0.5 for RSSI
@@ -80,7 +89,9 @@ class Radio(LineReader):
             logging.error("Exception occurred", exc_info=True)
             return           
         self.send_cmd("sys set pindig GPIO10 0", delay=1)
-        #self.send_cmd('radio rx 0')  
+
+        if DefaultReceive:
+            self.send_cmd('radio rx 0')  # set continuous receive
 
 
     def connection_lost(self, exc):
@@ -91,13 +102,17 @@ class Radio(LineReader):
 
     def tx(self):
         global DataToTransmit
-        self.send_cmd("sys set pindig GPIO11 1")
+        global DefaultReceive
         dataBin = zlib.compress(str.encode(DataToTransmit)).hex()
-        DataToTransmit = ""  # clear the message
-        txmsg = 'radio tx ' + dataBin
-        self.send_cmd(txmsg)
-        time.sleep(.3)
-        self.send_cmd("sys set pindig GPIO11 0")
+        DataToTransmit = ""  # clear the message        
+        if DefaultReceive:
+            self.send_cmd("radio rxstop", 1) #disable conitunous receive mode
+            self.send_cmd('radio tx ' + dataBin, 3)
+            self.send_cmd("radio rx 0", 1) # re-enable conitunous receive mode 
+        else:
+            self.send_cmd("sys set pindig GPIO11 1")
+            self.send_cmd('radio tx ' + dataBin, .3)    
+            self.send_cmd("sys set pindig GPIO11 0")
 
     def send_cmd(self, cmd, delay=.5):
         print("SEND: %s bytes " % str(len(cmd)) + cmd )

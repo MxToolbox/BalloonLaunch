@@ -36,20 +36,22 @@ args = parser.parse_args()
 class Radio(LineReader):
     # used for verifying commands have completed.
     lastCommand = ""
+    COMMAND_TIMEOUT = 5 #sec
     #lastSendTime = datetime.now()
     waitingForResponse = False
     lastResponse = ""
+
 
     def connection_made(self, transport):
         print("connection made")
         self.transport = transport
         self.send_cmd('radio set freq 903500000', False)        
-        self.send_cmd('radio set pwr 20')
+        self.send_cmd('radio set pwr 20', False)
         #self.send_cmd('sys get ver')
         #self.send_cmd('radio get mod')
         #self.send_cmd('radio get freq')
         #self.send_cmd('radio get sf')
-        self.send_cmd('mac pause')
+        self.send_cmd('mac pause', False)
         self.send_cmd('radio rx 0')  # Continuous Receive mode
         self.frame_count = 0
 
@@ -57,11 +59,11 @@ class Radio(LineReader):
         print(data)
         if self.waitingForResponse:
             self.lastResponse = data
-            print("Response: " + self.lastResponse)
+            print(self.lastCommand + ": " + self.lastResponse)
             self.waitingForResponse = False
             if data == "radio_err":
                 print(data)
-                self.send_cmd('radio rx 0')
+                #self.send_cmd('radio rx 0')
             return
         if data == "ok":
             return
@@ -118,19 +120,24 @@ class Radio(LineReader):
 
     # send and wait for and return response
     def send_cmd(self, cmd, expectResponse = True):
-        #delay is ignored here!
-        print("SEND: %s bytes " % str(len(cmd)) + cmd )
+        while self.waitingForResponse:
+            time.sleep(.05)
+            #poor man's queue on the stack.
+
+        #print("SEND: %s bytes " % str(len(cmd)) + cmd )
         self.write_line(cmd)
-        time.sleep(1)
+        time.sleep(.3)
         if expectResponse:
             self.waitingForResponse = True
             self.lastCommand = cmd
+            count = 0
             while self.waitingForResponse == True:
-                time.sleep(.05)
-                print("Waiting on " + self.lastCommand)
-                return self.lastResponse
-        else:
-            return ""
+                count += 1
+                time.sleep(.1)
+                if count * 0.1 > self.COMMAND_TIMEOUT:
+                    print("Timeout waiting for response to: " + cmd)
+                    return
+                #print("Waiting on " + self.lastCommand)
 
 def Transmit():
     with ReaderThread(ser, Radio) as protocol:

@@ -34,15 +34,11 @@ class Radio(LineReader):
     def connection_made(self, transport):
         print("connection made")
         self.transport = transport
-        self.send_cmd("sys set pindig GPIO11 0")
-        self.send_cmd('radio set freq 903500000')        
-        self.send_cmd('sys get ver')
-        self.send_cmd('radio get mod')
-        self.send_cmd('radio get freq')
-        self.send_cmd('radio get sf')
+        self.send_cmd('radio set freq 903500000') 
+        self.send_cmd('radio set mod lora')
         self.send_cmd('mac pause')
         self.send_cmd('radio set pwr 20')
-        self.send_cmd("sys set pindig GPIO11 0")
+        self.send_cmd('radio get mod')
         self.frame_count = 0
 
     def handle_line(self, data):

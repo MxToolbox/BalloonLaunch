@@ -41,6 +41,8 @@ headers = ["time","temp","humidity","pressure","pressure alt (m)","vert speed (m
 colors = [Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE,Fore.CYAN,Fore.WHITE,Fore.WHITE,Fore.WHITE]
 csvLog.writeCsvLog(headers)
 
+
+radio.DefaultReceive = True
 # Poll for new data
 while True:
     if radio.ReceivedDataReady:
@@ -122,7 +124,7 @@ while True:
             print(' _____________________________________________________')
 
             # Set value to send to Flight Computer
-            #radio.DataToTransmit = "Hello from Earth."
+            radio.DataToTransmit = "Hello from Earth."
         except:
             print("Exception")
             logging.error("Exception occurred", exc_info=True)

@@ -32,28 +32,28 @@ args = parser.parse_args()
 class Radio(LineReader):
 
     def connection_made(self, transport):
-        #print("connection made")
+        print("connection made")
         self.transport = transport
-        self.send_cmd('radio set freq 903500000') 
+        self.send_cmd('radio set freq 903500000')
+        self.send_cmd('radio set mod lora') 
         self.send_cmd('sys get ver')
         self.send_cmd('radio get mod')
         self.send_cmd('radio get freq')
         self.send_cmd('radio get sf')        
         self.send_cmd('mac pause')
-        self.send_cmd('radio set pwr 20')
+        self.send_cmd('radio set pwr 20')        
         self.send_cmd('radio rx 0')
-        self.send_cmd("sys set pindig GPIO10 0")
-        self.frame_count = 0
+        self.send_cmd("sys set pindig GPIO10 0")        
 
     def handle_line(self, data):
         print(data)
         global snr
-        if data == "ok" or data == 'busy':
+        if data == "ok": #or data == 'busy':
             return
         if data == "radio_err":
             self.send_cmd('radio rx 0')
             return
-        self.send_cmd("sys set pindig GPIO10 1", delay=0)
+        
         sendingCommand = ""
 
         # Decode RxData
@@ -69,8 +69,10 @@ class Radio(LineReader):
                     RxData = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
                     print("RECV COMMAND: %s" % RxData)
                     receiveCommand(RxData)
+                    self.send_cmd('radio rx 0')
                     if RequestSNR:
                         self.send_cmd('radio get snr')  # requires firmware 1.0.5 for RSSI
+                    self.send_cmd("sys set pindig GPIO10 0", delay=1)
             else:
                 print('INFO: ' + data)
                 SNR = data
@@ -78,12 +80,11 @@ class Radio(LineReader):
             print('ERROR: ' + data)
             logging.error("Exception occurred", exc_info=True)
             return   
-
-        self.send_cmd("sys set pindig GPIO10 0", delay=1)
-        self.send_cmd('radio rx 0')
+        #self.send_cmd('radio rx 0')
 
         if not sendingCommand == "":
-            self.tx(sendingCommand)
+            print("Sending?")
+            self.tx()
             sendingCommand = ""  #clear command
 
     def connection_lost(self, exc):
@@ -111,7 +112,7 @@ parser = argparse.ArgumentParser(description='LoRa Radio mode receiver.')
 parser.add_argument('--radio', help="Serial port descriptor")
 #parser.add_argument('--gps', help="Serial port descriptor")
 args = parser.parse_args()
-
+ser = serial.Serial(args.radio, baudrate=57600)
 def Transmit():
     with ReaderThread(ser, Radio) as protocol:
         while(1):
@@ -120,6 +121,6 @@ def Transmit():
             time.sleep(.1)   
 
 print("Iniitializing LoRa Radio...")
-telemetry_thread=thread.Thread(target=receive) 
+telemetry_thread=thread.Thread(target=Transmit) 
 telemetry_thread.setDaemon(True)                  
 telemetry_thread.start()

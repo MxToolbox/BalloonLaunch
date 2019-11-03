@@ -9,7 +9,7 @@ import telemetry
 sys.path.insert(1, 'common/')
 import loraRadio
 import flightModes
-import raspistills  
+#import raspistills  
 import proximityAlarm
 import cutdown
 import codecs
@@ -29,11 +29,13 @@ headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitc
 csvLog.writeCsvLog(headers)
 
 LogFreqSeconds = 5
+radio.DefaultReceive = True
 while True:
     try:        
         # Check for any new commands from Ground
         if loraRadio.ReceivedDataReady:
             command = loraRadio.ReceivedData
+            print("Received Command: " + command)
             loraRadio.ReceivedData = ""       #reset semaphore and value
             loraRadio.ReceivedDataReady = False
             if command == "cutdown":

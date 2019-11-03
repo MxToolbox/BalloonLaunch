@@ -11,6 +11,9 @@
 # For BMP280:
 * `sudo pip3 install adafruit-circuitpython-bmp280`
 
+# For ADS1x15 ADC:
+* `sudo pip3 install adafruit_ads1x15`
+
 # For GPS / GEO:
 * `sudo apt-get install gpsd gpsd-clients python-gps`
 * `sudo pip3 install numpy`
