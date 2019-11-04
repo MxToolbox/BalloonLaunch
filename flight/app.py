@@ -16,6 +16,7 @@ import atexit
 #import cutdown
 import flightGPIO
 import codecs
+import messages
 
 def cleanup():
     flightGPIO.destroy()
@@ -35,13 +36,14 @@ logger.warning('Starting Flight Computer')
 tracker = telemetry
 radio = loraRadio
 
-values = [0]*23
-headers = [0]*23
-headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "HDOP", "VDOP", "LastFix", "Mode"]
+values = [0]*24
+headers = [0]*24
+headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "HDOP", "VDOP", "LastFix", "Mode", "Message"]
 csvLog.writeCsvLog(headers)
 
 LogFreqSeconds = 5
 radio.DefaultReceive = True
+lastMessageCode = 250
 while True:
     try:        
         # Check for any new commands from Ground
@@ -52,7 +54,7 @@ while True:
             loraRadio.ReceivedDataReady = False
             if command == "cutdown":
                 flightGPIO.CutdownArmed = True
-                flightGPIO.CutDownEnergize(tracker.fmode.GroundProximity)
+                lastMessageCode = flightGPIO.CutDownEnergize(tracker.fmode.GroundProximity)
                 flightGPIO.CutdownArmed = False
 
         tracker.update()
@@ -77,6 +79,7 @@ while True:
         values[20] = tracker.gpsd.vdop
         values[21] = tracker.secondsSinceLastGoodFix()
         values[22] = tracker.fmode.GetModeBitArray() #Mode
+        values[23] = lastMessageCode
         flightGPIO.IsGroundAlarm = tracker.fmode.GroundProximity
         
         csvLog.writeCsvLog(values)
@@ -101,9 +104,10 @@ while True:
 
         # queue for transmission
         loraRadio.DataToTransmit = valuesStr
-
+        lastMessageCode = 250
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)
+        lastMessageCode = 500
         time.sleep(1)
     except KeyboardInterrupt:  # When 'Ctrl+C' is pressed, the child program destroy() will be  executed.
         print("Ctrl+C Exiting....")

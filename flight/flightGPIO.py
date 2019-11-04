@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
+import sys
+sys.path.insert(1, 'common/')
 import RPi.GPIO as GPIO
 import time
 import threading as thread
 import logging
 import traceback
+import messages
 
 IsGroundAlarm = False
 CutdownArmed = False
@@ -22,11 +25,13 @@ def CutDownEnergize(IsGroundProximity):
     global CutdownArmed
     global CutdownInProgress
     if not (IsGroundProximity):
-        logging.warning("CutDown prevented because Ground Proximity was not indicated.")
-        return
+        # CutDown prevented because Ground Proximity was not indicated.
+        logging.warning(messages.code[460])
+        return 460
     if not (CutdownArmed):
-        logging.warning("CutDown prevented because mechanism was not armed.")
-        return        
+        # CutDown prevented because mechanism was not armed.
+        logging.warning(messages.code[461])
+        return 461      
     try:
         logging.warning("Beginning Cutdown!")
         CutdownInProgress = True
@@ -36,11 +41,15 @@ def CutDownEnergize(IsGroundProximity):
         time.sleep(CutDuration)
         gpio.output(CutDownPin, GPIO.LOW)
         CutdownInProgress = False
-    except:
-        logging.critical("Cutdown error", exc_info=True)
-    finally:
-        #destroy()
         logging.warning("Ending Cutdown!")
+        # Cutdown command executed OK.
+        logging.warning(messages.code[260])
+        return 260              
+    except:
+        # CutDown Error.
+        logging.warning(messages.code[560])
+        return 560     
+
 
 def destroy():
     try:
