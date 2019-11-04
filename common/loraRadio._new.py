@@ -20,7 +20,7 @@ ReceivedDataReady = False
 ReceivedData = ""
 RequestSNR = False
 SNR = ""
-
+DefaultReceive = False
 def receiveCommand(RxData):
     global ReceivedDataReady
     global ReceivedData
@@ -52,18 +52,19 @@ class Radio(LineReader):
         #self.send_cmd('radio get freq')
         #self.send_cmd('radio get sf')
         self.send_cmd('mac pause', False)
-        self.send_cmd('radio rx 0')  # Continuous Receive mode
+        self.send_cmd('radio rx 0', False)  # Continuous Receive mode
         self.frame_count = 0
 
     def handle_line(self, data):
+        global DefaultReceive
+        global SNR        
         print(data)
         if self.waitingForResponse:
             self.lastResponse = data
             print(self.lastCommand + ": " + self.lastResponse)
             self.waitingForResponse = False
             if data == "radio_err":
-                print(data)
-                #self.send_cmd('radio rx 0')
+                self.send_cmd('radio rx 0')
             return
         if data == "ok":
             return
@@ -76,14 +77,13 @@ class Radio(LineReader):
                 print("Rx Data: " + data)
                 command = parts[0]
                 if command == "radio_rx":
-                    #self.send_cmd("sys set pindig GPIO10 1") 
+                    self.send_cmd("sys set pindig GPIO10 1", False) 
                     dataBytes = parts[2]     
-                    print("Rx " + str(len(data)) + " bytes: " + str(dataBytes)) 
                     RxData = zlib.decompress(codecs.decode(dataBytes, "hex")).decode("utf-8")
-                    print("RECV COMMAND: %s" % RxData)
+                    print("Rx " + str(len(data)) + " bytes: " + RxData)
                     receiveCommand(RxData)
                     if RequestSNR:
-                        self.send_cmd('radio get snr')  # requires firmware 1.0.5 for RSSI
+                        self.send_cmd('radio get snr', False)  # requires firmware 1.0.5 for RSSI
             else:
                 print('INFO: ' + data)
                 SNR = data
@@ -91,8 +91,10 @@ class Radio(LineReader):
             print('ERROR: ' + data)
             logging.error("Exception occurred", exc_info=True)
             return           
-        #self.send_cmd("sys set pindig GPIO10 0")
-        self.send_cmd('radio rx 0')  
+        self.send_cmd("sys set pindig GPIO10 0", False)
+
+        if DefaultReceive:
+            self.send_cmd('radio rx 0')  # set continuous receive
 
 
     def connection_lost(self, exc):
@@ -107,16 +109,9 @@ class Radio(LineReader):
         #self.send_cmd("sys set pindig GPIO11 1")
         dataBin = zlib.compress(str.encode(DataToTransmit)).hex()
         DataToTransmit = ""  # clear the message
-        txmsg = 'radio tx ' + dataBin
-        self.send_cmd(txmsg)
+        self.send_cmd('radio tx ' + dataBin)
         #self.send_cmd("sys set pindig GPIO11 0")
         self.send_cmd('radio rx 0')  # reenable continuous receive mode
-
-
-    #def send_cmd_old(self, cmd, delay=.5):
-    #    print("SEND: %s bytes " % str(len(cmd)) + cmd )
-    #    self.write_line(cmd)
-    #    time.sleep(delay)
 
     # send and wait for and return response
     def send_cmd(self, cmd, expectResponse = True):
@@ -126,18 +121,19 @@ class Radio(LineReader):
 
         #print("SEND: %s bytes " % str(len(cmd)) + cmd )
         self.write_line(cmd)
-        time.sleep(.3)
+        #time.sleep(.3)
         if expectResponse:
             self.waitingForResponse = True
             self.lastCommand = cmd
             count = 0
+            return
             while self.waitingForResponse == True:
                 count += 1
                 time.sleep(.1)
                 if count * 0.1 > self.COMMAND_TIMEOUT:
                     print("Timeout waiting for response to: " + cmd)
+                    self.waitingForResponse = False
                     return
-                #print("Waiting on " + self.lastCommand)
 
 def Transmit():
     with ReaderThread(ser, Radio) as protocol:

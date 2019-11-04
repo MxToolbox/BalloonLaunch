@@ -33,7 +33,12 @@ parser.add_argument('--radio', help="Serial port descriptor")
 args = parser.parse_args()
 
 class Radio(LineReader):
-    
+    # used for verifying commands have completed.
+    lastCommand = ""
+    COMMAND_TIMEOUT = 5 #sec
+    #lastSendTime = datetime.now()
+    waitingForResponse = False
+    lastResponse = ""    
     def connection_made(self, transport):
         global DefaultReceive
         print("connection made")
@@ -50,12 +55,6 @@ class Radio(LineReader):
             self.send_cmd('radio rx 0')  # set continuous receive
         self.send_cmd("sys set pindig GPIO11 0")
         self.frame_count = 0
-
-    def RxStart(self):
-        self.send_cmd('radio rx 0',2)  # set continous receive
-
-    def RxStop(self):
-        self.send_cmd('radio rxstop',2)  # end continous receive        
 
     def handle_line(self, data):
         global DefaultReceive

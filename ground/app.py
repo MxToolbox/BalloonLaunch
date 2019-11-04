@@ -124,7 +124,7 @@ while True:
             print(' _____________________________________________________')
 
             # Set value to send to Flight Computer
-            radio.DataToTransmit = "Hello from Earth."
+            radio.DataToTransmit = "cutdown" #"Hello from Earth."
         except:
             print("Exception")
             logging.error("Exception occurred", exc_info=True)

@@ -4,15 +4,27 @@ import time
 import math
 import logging
 from datetime import datetime, timedelta 
+import RPi.GPIO as GPIO
 import csvLog
 import telemetry
 sys.path.insert(1, 'common/')
 import loraRadio
 import flightModes
+import atexit
 #import raspistills  
-import proximityAlarm
-import cutdown
+#import proximityAlarm
+#import cutdown
+import flightGPIO
 import codecs
+
+def cleanup():
+    flightGPIO.destroy()
+
+atexit.register(cleanup)
+
+GPIO.cleanup()          # just in case?
+GPIO.setmode(GPIO.BCM)  # global for the app
+
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
 #logging.basicConfig(level=logging.DEBUG,filename='mdm-2.log', format='%(process)d-%(levelname)s-%(message)s')
@@ -39,7 +51,9 @@ while True:
             loraRadio.ReceivedData = ""       #reset semaphore and value
             loraRadio.ReceivedDataReady = False
             if command == "cutdown":
-                cutdown.Energize(tracker.fmode.GroundProximity)
+                flightGPIO.CutdownArmed = True
+                flightGPIO.CutDownEnergize(tracker.fmode.GroundProximity)
+                flightGPIO.CutdownArmed = False
 
         tracker.update()
         values[0] = str(datetime.now())
@@ -63,7 +77,7 @@ while True:
         values[20] = tracker.gpsd.vdop
         values[21] = tracker.secondsSinceLastGoodFix()
         values[22] = tracker.fmode.GetModeBitArray() #Mode
-        proximityAlarm.IsGroundAlarm = tracker.fmode.GroundProximity
+        flightGPIO.IsGroundAlarm = tracker.fmode.GroundProximity
         
         csvLog.writeCsvLog(values)
 
@@ -91,4 +105,7 @@ while True:
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)
         time.sleep(1)
+    except KeyboardInterrupt:  # When 'Ctrl+C' is pressed, the child program destroy() will be  executed.
+        print("Ctrl+C Exiting....")
+        flightGPIO.destroy()
     time.sleep(LogFreqSeconds)
