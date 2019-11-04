@@ -99,6 +99,7 @@ while True:
         values[7] = ''
         values[8] = ''
         values[9] = ''
+        
         values[16] = ''
         valuesStr = ",".join(map(str,values))
 

@@ -16,7 +16,7 @@ sys.path.insert(1, '../common/')
 import loraRadio
 import flightModes
 import voiceStatus
-
+import controlPanel
 
 radio = loraRadio
 radio.RequestSNR = True
