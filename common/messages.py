@@ -1,4 +1,6 @@
 # 
+import logging
+import traceback
 
 code = {
   250: "Nominal",
@@ -7,3 +9,7 @@ code = {
   461: "CutDown prevented because mechanism was not armed.",
   560: "CutDown Error."
 }
+
+
+
+
