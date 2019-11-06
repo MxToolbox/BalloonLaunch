@@ -2,7 +2,6 @@
 import time
 import traceback
 import logging
-#import voiceStatus
 import telemetry
 import controlPanel
 
@@ -14,7 +13,10 @@ telem = telemetry
 def mainloop():
     while True:
         try:
-            controlPanel.updateTelemetry(telem.model)
+            controlPanel.update(telem.model)
+            if not controlPanel.commandToSend == "":
+                telem.commandToSend = controlPanel.commandToSend
+                controlPanel.commandToSend = ""
             time.sleep(.05)
         except:
             logging.error("app.mainloop(): ", exc_info=True)

@@ -23,13 +23,14 @@ fmode = flightModes.Modes()
 voice = voiceStatus
 
 model = None
-
+commandToSend = ""
 def monitorTelemetry():
     global radio
     global gpsWatcher
     global fmode
     global voice
     global model
+    global commandToSend
 
     rxPositionSet = False
     rxLat = 30.4316015
@@ -122,8 +123,10 @@ def monitorTelemetry():
                     i = i + 1
                 print(' _____________________________________________________')
                 model = Model(values)
-                # Set value to send to Flight Computer
-                radio.DataToTransmit = "cutdown" #"Hello from Earth."
+                
+                # Set value to send to Flight Computer  (uncomment to test)
+                radio.DataToTransmit = commandToSend
+                commandToSend = "" # clear command
             except:
                 print("Exception")
                 logging.error("Exception occurred", exc_info=True)
