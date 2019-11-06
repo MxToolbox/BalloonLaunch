@@ -12,8 +12,6 @@ import loraRadio
 import flightModes
 import atexit
 #import raspistills  
-#import proximityAlarm
-#import cutdown
 import flightGPIO
 import codecs
 import messages

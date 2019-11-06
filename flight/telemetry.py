@@ -81,11 +81,11 @@ def update():
     fmode.GroundProximity = IsGroundAlarm(lastGoodAlt, lastPressureAlt)
     #fmode.Stationary = fmode.GroundProximity &  verticalSpeedFps == 0
 
-    if verticalSpeedFps > 0:
+    if verticalSpeedFps > 0.25:
         fmode.Ascending = True
         fmode.Descending = False
         fmode.Stationary = False
-    elif verticalSpeedFps < 0:
+    elif verticalSpeedFps < 0.25:
         fmode.Ascending = False
         fmode.Descending = True
         fmode.Stationary = False

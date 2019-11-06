@@ -12,6 +12,7 @@ import logging
 import winsound  #windows only
 import gpsFileWatcher
 import csvLog
+from datetime import datetime, timedelta 
 sys.path.insert(1, '../common/')
 import loraRadio
 import flightModes
@@ -191,3 +192,4 @@ class Model():
         self.losRange = dataArray[31]
       except:
           logging.error("Exception occurred loading telemetry model", exc_info=True)
+    self.modelCreated = datetime.now()

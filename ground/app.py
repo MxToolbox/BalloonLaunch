@@ -11,14 +11,14 @@ logging.info('Initializing Ground Control')
 telem = telemetry
 
 def mainloop():
-    while True:
+    while not controlPanel.exiting:
         try:
             controlPanel.update(telem.model)
             if not controlPanel.commandToSend == "":
                 telem.commandToSend = controlPanel.commandToSend
                 controlPanel.commandToSend = ""
-            time.sleep(.05)
+            time.sleep(.5)
         except:
             logging.error("app.mainloop(): ", exc_info=True)
 
-mainloop()
+mainloop();
