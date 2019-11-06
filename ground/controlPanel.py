@@ -37,7 +37,7 @@ def update(model):
         if fmode.HasGpsFix:
             app.HasGpsFix.configure(bg="green")
         else:
-            app.HasGpsFix.configure(bg="grey")
+            app.HasGpsFix.configure(bg="red")
         if fmode.Ascending:
             app.Ascending.configure(bg="green")
         else:
