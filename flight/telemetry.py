@@ -17,7 +17,7 @@ bmp = bmp280
 
 maxAltPressure = 0 # feet
 maxAltGps = 0  # meters
-verticalSpeedFps = 0
+verticalSpeed = 0
 
 lastTemperature  = 0
 lastPressure = 0
@@ -77,20 +77,19 @@ def update():
         # Check Max GPS Alt
         if lastGoodAlt > maxAltGps:
             maxAltGps = lastGoodAlt 
-    
-    fmode.GroundProximity = IsGroundAlarm(lastGoodAlt, lastPressureAlt)
-    #fmode.Stationary = fmode.GroundProximity &  verticalSpeedFps == 0
 
-    if verticalSpeedFps > 0.25:
+    fmode.SetStatus(lastGoodAlt, lastPressureAlt, verticalSpeed)
+    fmode.GroundProximity = IsGroundAlarm(lastGoodAlt, lastPressureAlt)
+    if verticalSpeed > 0.25:
         fmode.Ascending = True
         fmode.Descending = False
         fmode.Stationary = False
-    elif verticalSpeedFps < 0.25:
+    elif verticalSpeed < 0.25:
         fmode.Ascending = False
         fmode.Descending = True
         fmode.Stationary = False
     else:
-        fmode.Ascending = False
+        fmode.verticalSpeed = False
         fmode.Descending = False
         fmode.Stationary = True           
 
@@ -105,13 +104,13 @@ def pressureAltitude():
         global lastPressure
         global lastPressureAlt
         global maxAltPressure
-        global verticalSpeedFps
+        global verticalSpeed
         lastPressure = int(bmp.sensor.pressure)  # millibars
         currentPressureAlt = round((((1 - (lastPressure / 1013.25)** 0.190284)) * 145366.45) / 3.28, 0)
         if currentPressureAlt > maxAltPressure:
             maxAltPressure = int(currentPressureAlt)
 
-        verticalSpeedFps = round((currentPressureAlt - lastPressureAlt) / secondsSinceLastUpdate(), 1) # feet per second
+        verticalSpeed = round((currentPressureAlt - lastPressureAlt) / secondsSinceLastUpdate(), 1)
         lastPressureAlt = int(currentPressureAlt)
         lastTemperature = bmp.sensor.temperature
         return currentPressureAlt

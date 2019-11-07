@@ -163,7 +163,7 @@ class Model():
     self.gpsTrack = self.dataArray[15]
     self.gpsTime = self.dataArray[16]
     self.maxAltGps = self.dataArray[17]
-    self.masAltPessure = self.dataArray[18]
+    self.maxAltPessure = self.dataArray[18]
     self.HDOP = self.dataArray[19]
     self.VDOP = self.dataArray[20]
     self.LastFix = self.dataArray[21]

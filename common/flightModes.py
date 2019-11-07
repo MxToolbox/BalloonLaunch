@@ -1,6 +1,8 @@
 import math
 # Mode Parameters stored in a bit array  (Set/Get)
 class Modes:
+    IsArmed = False
+    THRESHOLD_ALTITUDE_METERS = 600  # arm once above this altitude, alarm after arming when falls below this altitude
 
     def __init__(self):
         self.GroundProximity = False  #1
@@ -59,6 +61,37 @@ class Modes:
         if self.HasGpsFix == False:
             msg = msg + " No Gps Fix, "
         return msg
+
+    def SetStatus(self, GpsAltitudeMeters, PressureAltitudeMeters, verticalSpeed):
+        altMeters = 0 
+        try:
+            altMeters = int(GpsAltitudeMeters)
+        except:
+            try:
+                altMeters = int(PressureAltitudeMeters)
+            except:
+                print("Unable to get altitude from GPS or altimeter!")
+
+        if altMeters > self.THRESHOLD_ALTITUDE_METERS:
+            self.IsArmed = True
+        if self.IsArmed and altMeters < self.THRESHOLD_ALTITUDE_METERS:
+            print("Gound Alarm")
+            self.GroundProximity = True
+        else:
+            self.GroundProximity = False
+
+        if verticalSpeed > 0.25:
+            self.Ascending = True
+            self.Descending = False
+            self.Stationary = False
+        elif verticalSpeed < 0.25:
+            self.Ascending = False
+            self.Descending = True
+            self.Stationary = False
+        else:
+            self.verticalSpeed = False
+            self.Descending = False
+            self.Stationary = True      
 
 # Test Cases
 #SetModeBitArray(35)
