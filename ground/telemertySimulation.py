@@ -25,13 +25,23 @@ def Simulate():
     speedFactor = 1  # number of times faster to run simulation
     missionSeconds = 0 # number of seconds into the simulated mission we are
     BurstAlt = 30000
-
+    hasBurst = False
     while True:
         curModel.time = startTime + timedelta(seconds=missionSeconds)
+        if not BurstAlt:
+                curModel.pressureAlt += 5 * speedFactor  
+                curModel.gpsAlt += 5 * speedFactor 
+        else:    
+                curModel.pressureAlt -= 5 * speedFactor 
+                curModel.gpsAlt -= 5 * speedFactor 
+        if curModel.pressureAlt > BurstAlt:
+                hasBurst = True
+        if curModel.pressureAlt > curModel.masAltPessure:             
+                curModel.masAltPessure = curModel.pressureAlt
+                curModel.gpsAlt = curModel.gpsAlt
+
         time.sleep(1)
-        missionSeconds += 1
-
-
+        missionSeconds += speedFactor
 
 
 telemetry_thread=thread.Thread(target=Simulate) 
