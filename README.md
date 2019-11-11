@@ -26,6 +26,20 @@ Also, gpsctl -[nb] swithes between NEMA and binary for the UBlox M8
 Test with cpgs or gpsmon
 http://manpages.ubuntu.com/manpages/bionic/man1/gpsctl.1.html
 
+# For Advanced GPS:
+A install of gpsd from source is needed to be able to dynamically change flight modes via the ubxtool that isn't included with the package
+* Download latest release from http://download-mirror.savannah.gnu.org/releases/gpsd/
+* Here are some known prerequisites - Full list available at https://gitlab.com/gpsd/gpsd/blob/master/INSTALL.adoc
+* `sudo apt-get install scons`
+* `sudo apt-get install libncurses5-dev libncursesw5-dev`
+* Follow instructions in build.adoc here - https://gitlab.com/gpsd/gpsd/blob/master/build.adoc
+* `scons && scons check && sudo scons udev-install`
+
+Once you have access to ubxtool you can poll your current mode with
+* `ubxtool -p MODEL`
+You can update your flight mode with 
+* `ubxtool -p MODEL -m 6` #Replace 6 with whatever model you want to use
+
 # For LoRa Stik Support:
 * `sudo pip3 install serial`
 * `sudo pip3 install pySerial`
