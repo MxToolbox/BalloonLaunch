@@ -16,12 +16,12 @@ from datetime import datetime, timedelta
 sys.path.insert(1, '../common/')
 import loraRadio
 import flightModes
-import voiceStatus
+
 radio = loraRadio
 radio.RequestSNR = True
 gpsWatcher = gpsFileWatcher
 fmode = flightModes.Modes()
-voice = voiceStatus
+
 
 model = None
 commandToSend = ""
@@ -29,7 +29,6 @@ def monitorTelemetry():
     global radio
     global gpsWatcher
     global fmode
-    global voice
     global model
     global commandToSend
 
@@ -72,7 +71,7 @@ def monitorTelemetry():
                 fmode.SetModeBitArray(values[22])
                 statusMessage = fmode.StatusMessage(txAltGPS,txClimbGPS)
                 print(statusMessage)
-                voice.CurrentMessage = statusMessage
+
 
                 rxLat = round(gpsWatcher.latitude,6)  # Geo from local GPS on transer device
                 rxLon = round(gpsWatcher.longitude,6)
