@@ -93,6 +93,15 @@ class Modes:
             self.Descending = False
             self.Stationary = True      
 
+# Ublox stuff.
+# Poll for current model
+#ubxtool -p CFG-NAV5
+# Set model
+#ubxtool -p MODEL -m 6
+# Save config
+#ubxtool -p SAVE
+
+
 # Test Cases
 #SetModeBitArray(35)
 #print("GroundProximitry=" + str(GroundProximitry))
