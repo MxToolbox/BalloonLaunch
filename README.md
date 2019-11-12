@@ -8,11 +8,21 @@
 # For BMP180:
 * `sudo pip3 install smbus`
 
-# For BMP280:
+# For BMP280 0x77:
 * `sudo pip3 install adafruit-circuitpython-bmp280`
 
 # For ADS1x15 ADC:
 * `sudo pip3 install adafruit_ads1x15`
+
+# For SI1145 0x60:
+* `sudo apt-get update`
+* `sudo apt-get install build-essential python-pip python-dev python-smbus git`
+* `git clone https://github.com/adafruit/Adafruit_Python_GPIO.git`
+* `cd Adafruit_Python_GPIO`
+* `sudo python setup.py install`
+
+# For INA219 0x40:
+* `sudo pip3 install pi-ina219`
 
 # For GPS / GEO:
 * `sudo apt-get install gpsd gpsd-clients python-gps`

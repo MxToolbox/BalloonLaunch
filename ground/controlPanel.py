@@ -103,6 +103,15 @@ def setStatusIndicators(app, model):
         else:
             app.SNR.configure(bg="red",fg="white", text = "SNR: " + model.snr)
 
+    powerLevel = str(model.voltage) + "V / " + str(model.current) + "A / " + str(round(float(model.voltage) * float(model.current),2)) + "W"
+    if float(model.voltage) > 11:
+        app.Power.configure(bg="green", fg="white", text = powerLevel)
+    elif float(model.voltage) > 10:
+        app.Power.configure(bg="yellow", fg="black",  text = powerLevel)
+    else:
+        app.Power.configure(bg="red", fg="white",  text = powerLevel)
+
+
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -122,11 +131,13 @@ class Application(tk.Frame):
         self.Ascending = tk.Button(root, width=24, text='Ascending',relief='ridge', fg="white", font=("Courier Bold", 12))
         self.Descending = tk.Button(root, width=24, text='Descending',relief='ridge', fg="white", font=("Courier Bold", 12))
         self.SNR = tk.Button(root, width=24, text='SNR',relief='ridge', fg="white", font=("Courier Bold", 12))        
+        self.Power = tk.Button(root, width=24, text='Power',relief='ridge', fg="white", font=("Courier Bold", 12))
         self.GroundProximity.place(x=50,y=10)
         self.HasGpsFix.place(x=250,y=10)
         self.Ascending.place(x=450,y=10)
         self.Descending.place(x=650,y=10)
         self.SNR.place(x=850,y=10)
+        self.Power.place(x=1050,y=10)
 
         #Define and put these in position
 

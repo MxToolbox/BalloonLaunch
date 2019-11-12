@@ -39,7 +39,7 @@ def monitorTelemetry():
     txLat = 0.0
     txLon = 0.0
 
-    headers = ["time","temp","humidity","pressure","pressure alt (m)","vert speed (m/s)","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed (m/s)", "gps climb (m/s)", "gps track", "gps time","maxAltGps (m)","maxAltPressure (ft)", "HDOP", "VDOP", "LastFix", "Mode", "Message", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
+    headers = ["time","temp","humidity","pressure","pressure alt (m)","vert speed (m/s)","pitch","roll","yaw","compass","lat","lon","gps alt (m)","gps speed (m/s)", "gps climb (m/s)", "gps track", "gps time","maxAltGps (m)","maxAltPressure (ft)", "HDOP", "VDOP", "LastFix", "Mode", "Message", "voltage", "current", "uvindex", "uv", "down range (m)", "heading", "snr", "rx lat", "rx lon", "rx alt", "elevation", "los range (m)"]
     csvLog.writeCsvLog(headers)
     radio.DefaultReceive = True
     # Poll for new data
@@ -169,6 +169,11 @@ class Model():
     self.Mode = self.dataArray[22]
     self.Message  = self.dataArray[23]
 
+    self.voltage = dataArray[24]
+    self.current = dataArray[25]
+    self.uvindex = dataArray[26]
+    self.uv = dataArray[27]       
+
   # these are dervived locally by the ground app
     self.downRange = 0.0
     self.heading = 0.0
@@ -179,16 +184,16 @@ class Model():
     self.elevation = 0.0
     self.losRange = 0.0
 
-    if len(self.dataArray) > 24:
+    if len(self.dataArray) > 28:
       try:
-        self.downRange = dataArray[24]
-        self.heading = dataArray[25]
-        self.snr = dataArray[26]
-        self.rxLat = dataArray[27]
-        self.rxLon = dataArray[28]
-        self.rxAlt = dataArray[29]
-        self.elevation = dataArray[30]
-        self.losRange = dataArray[31]
+        self.downRange = dataArray[28]
+        self.heading = dataArray[29]
+        self.snr = dataArray[30]
+        self.rxLat = dataArray[31]
+        self.rxLon = dataArray[32]
+        self.rxAlt = dataArray[33]
+        self.elevation = dataArray[34]
+        self.losRange = dataArray[35]
       except:
           logging.error("Exception occurred loading telemetry model", exc_info=True)
     self.modelCreated = datetime.now()

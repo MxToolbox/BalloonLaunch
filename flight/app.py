@@ -15,6 +15,8 @@ import atexit
 import flightGPIO
 import codecs
 import messages
+import ina219meter
+import si1145
 
 def cleanup():
     flightGPIO.destroy()
@@ -33,10 +35,11 @@ logger.warning('Starting Flight Computer')
 
 tracker = telemetry
 radio = loraRadio
+uv = si1145.SI1145()
 
-values = [0]*24
-headers = [0]*24
-headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "HDOP", "VDOP", "LastFix", "Mode", "Message"]
+values = [0]*28
+headers = [0]*28
+headers = ["time","temp","humidity", "pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "HDOP", "VDOP", "LastFix", "Mode", "Message", "voltage", "current", "uvindex", "uv"]
 csvLog.writeCsvLog(headers)
 
 LogFreqSeconds = 10
@@ -78,6 +81,12 @@ while True:
         values[21] = tracker.secondsSinceLastGoodFix()
         values[22] = tracker.fmode.GetModeBitArray() #Mode
         values[23] = lastMessageCode
+
+        values[24] = ina219meter.voltage()
+        values[25] = ina219meter.current()
+        values[26] = uv.readUV()
+        values[27] = "0"
+
         flightGPIO.IsGroundAlarm = tracker.fmode.GroundProximity
         
         csvLog.writeCsvLog(values)
