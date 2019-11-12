@@ -105,9 +105,9 @@ class Radio(LineReader):
         dataBin = zlib.compress(str.encode(DataToTransmit)).hex()
         DataToTransmit = ""  # clear the message        
         if DefaultReceive:
-            self.send_cmd("radio rxstop", 1) #disable conitunous receive mode
-            self.send_cmd('radio tx ' + dataBin, 3)
-            self.send_cmd("radio rx 0", 1) # re-enable conitunous receive mode 
+            self.send_cmd("radio rxstop", 1) #disable continuous receive mode
+            self.send_cmd('radio tx ' + dataBin, 2)
+            self.send_cmd("radio rx 0", 1) # re-enable continuous receive mode 
         else:
             self.send_cmd("sys set pindig GPIO11 1")
             self.send_cmd('radio tx ' + dataBin, .3)    

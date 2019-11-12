@@ -34,11 +34,11 @@ def readVoltage(channel, factor = 1):
 
 
 if __name__ == '__main__':     # Program start from here
-	try:
-        While True:
+    try:
+        while True:
             print(readVoltage(0))
             time.sleep(1)
-	except KeyboardInterrupt:  # When 'Ctrl+C' is pressed, the child program destroy() will be  executed.
-		print("Exiting...");
+    except KeyboardInterrupt:  # When 'Ctrl+C' is pressed, the child program destroy() will be  executed.
+        print("Exiting...");
 
 

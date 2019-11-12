@@ -39,7 +39,7 @@ headers = [0]*24
 headers = ["time","temp","humidity","pressure","pressure alt","vert speed","pitch","roll","yaw","compass","lat","lon","gps alt","gps speed", "gps climb", "gps track", "gps time","maxAltGps","maxAltPressure", "HDOP", "VDOP", "LastFix", "Mode", "Message"]
 csvLog.writeCsvLog(headers)
 
-LogFreqSeconds = 5
+LogFreqSeconds = 10
 radio.DefaultReceive = True
 lastMessageCode = 250
 while True:
@@ -61,7 +61,7 @@ while True:
         values[2] = round(0, 0) # Humidity
         values[3] = round(tracker.lastPressure, 3) # millibars
         values[4] = round(tracker.lastPressureAlt, 0) # feet
-        values[5] = round(tracker.verticalSpeedFps, 0)
+        values[5] = round(tracker.verticalSpeed, 0)
         #values[6] = pitch, values[7] = roll, values[8] = yaw
 
         values[10] =  tracker.lastGoodLat # LAT (from another sensor)

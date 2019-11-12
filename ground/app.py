@@ -11,16 +11,16 @@ import controlPanel
 logging.basicConfig(filename='balloon.log', format='%(process)d-%(levelname)s-%(message)s')
 logging.info('Initializing Ground Control')
 
-telem = telemetry
+Telemetry = telemetry
 #telem = telemertySimulation
 
 def mainloop():
     print("Starting...")
     while not controlPanel.exiting:
         try:
-            controlPanel.update(telem.model)
+            controlPanel.update(Telemetry.model)
             if not controlPanel.commandToSend == "":
-                telem.commandToSend = controlPanel.commandToSend
+                Telemetry.commandToSend = controlPanel.commandToSend
                 controlPanel.commandToSend = ""
             time.sleep(.5)
         except:
