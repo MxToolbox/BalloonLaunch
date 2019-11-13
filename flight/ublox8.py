@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 currentMode = 0
 switchOverAlt = 10000
-maxAirbroneMinutes = 180  # after this duration, force portable mode as fail-safe.
+maxAirborneMinutes = 180  # after this duration, force portable mode as fail-safe.
 manualOverride = False
 startUpTime = datetime.now()
 
@@ -22,9 +22,9 @@ startUpTime = datetime.now()
 
 def CheckMode(altMeters):
     global switchOverAlt
-    if datetime.now() > startUpTime + timedelta(minutes=maxAirbroneMinutes) and currentMode != 0:
-        logging.warning("maxAirbroneMinutes exceeded and currentMode != 0")
-        setUbloxDynamicMode(0)  # airborne mode < 1G
+    if datetime.now() > startUpTime + timedelta(minutes=maxAirborneMinutes) and currentMode != 0:
+        logging.warning("maxAirborneMinutes exceeded and currentMode != 0")
+        setUbloxDynamicMode(0)  # portable
     elif altMeters > switchOverAlt and currentMode != 6 and not manualOverride:
         logging.warning("altMeters > switchOverAlt and currentMode != 6")
         setUbloxDynamicMode(6)  # airborne mode < 1G
@@ -38,10 +38,8 @@ def IsAirborneMode():
     else:
         return False
 
-def setUbloxDynamicMode(mode, override=False):
+def setUbloxDynamicMode(mode):
     global currentMode
-    global manualOverride
-    manualOverride = override
     command = "ubxtool -p MODEL -m " + str(mode)
     logging.warning(command)
     proc = subprocess.Popen([command, "/~"], stdout=subprocess.PIPE, shell=True)
@@ -52,6 +50,9 @@ def setUbloxDynamicMode(mode, override=False):
     else:
         logging.warning("ubxtool mode change FAILED: " + str(err))
 
+def setManualOverride(override):
+    global manualOverride
+    manualOverride = override
 
 setUbloxDynamicMode(0)  # initialize to portable mode
 
