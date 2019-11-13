@@ -89,7 +89,7 @@ class Modes:
             self.Ascending = True
             self.Descending = False
             self.Stationary = False
-        elif verticalSpeed < 0.25:
+        elif verticalSpeed < -0.25:
             self.Ascending = False
             self.Descending = True
             self.Stationary = False
