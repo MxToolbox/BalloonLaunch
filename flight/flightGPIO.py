@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-sys.path.insert(1, 'common/')
+sys.path.insert(1, '../common/')
 import RPi.GPIO as GPIO
 import time
 import threading as thread
@@ -93,7 +93,7 @@ alarm_thread=thread.Thread(target=monitorBuzzer)
 alarm_thread.setDaemon(True)                  
 alarm_thread.start()
 
-if __name__ == '__main__':     # Program start from here
+if __name__ == '__main__':     # Test start from here
     try:
         #setup()
         IsGroundAlarm = True
