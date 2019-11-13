@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 currentMode = 0
 switchOverAlt = 10000
-maxAirbroneMinutes = 1  # after this duration, force portable mode as fail-safe.
+maxAirbroneMinutes = 180  # after this duration, force portable mode as fail-safe.
 manualOverride = False
 startUpTime = datetime.now()
 
