@@ -11,6 +11,7 @@ class Modes:
         self.InFlight = False #8
         self.Stationary = False #16
         self.HasGpsFix = False #32
+        self.AirborneGpsMode = False #64
 
     def GetModeBitArray(self):
         value = 0
@@ -25,7 +26,9 @@ class Modes:
         if self.Stationary:
             value += 16
         if self.HasGpsFix:
-            value += 32    
+            value += 32   
+        if self.AirborneGpsMode:
+            value += 64                 
         return value
 
     def SetModeBitArray(self,bitValues):
@@ -42,6 +45,8 @@ class Modes:
             self.Stationary = True
         if value & 32 > 0:
             self.HasGpsFix = True                                        
+        if value & 64 > 0:
+            self.AirborneGpsMode = True               
 
     def StatusMessage(self, altitudeMeters, rateOfClimbMeters):
         msg = ""
@@ -89,7 +94,7 @@ class Modes:
             self.Descending = True
             self.Stationary = False
         else:
-            self.verticalSpeed = False
+            self.Ascending = False
             self.Descending = False
             self.Stationary = True      
 

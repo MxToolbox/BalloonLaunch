@@ -8,7 +8,7 @@ import threading as thread
 import bmp280
 sys.path.insert(1, '../common/')
 import flightModes
-
+import ublox8
 
 GROUND_PROX_METERS = 600
 gpsd = None 
@@ -78,6 +78,9 @@ def update():
         if lastGoodAlt > maxAltGps:
             maxAltGps = lastGoodAlt 
 
+    ublox8.CheckMode(lastGoodAlt)  # Check for UBlox dynamic mode and change if necessary
+    fmode.AirborneGpsMode = ublox8.IsAirborneMode()
+    
     fmode.SetStatus(lastGoodAlt, lastPressureAlt, verticalSpeed)
     fmode.GroundProximity = IsGroundAlarm(lastGoodAlt, lastPressureAlt)
     if verticalSpeed > 0.25:

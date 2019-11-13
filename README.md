@@ -23,6 +23,7 @@
 
 # For INA219 0x40:
 * `sudo pip3 install pi-ina219`
+* https://www.rototron.info/raspberry-pi-ina219-tutorial/
 
 # For GPS / GEO:
 * `sudo apt-get install gpsd gpsd-clients python-gps`
