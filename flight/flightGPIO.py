@@ -59,7 +59,7 @@ def destroy():
         gpio.output(BuzzerPin, GPIO.HIGH)     
         gpio.cleanup()                     # Release resource
     except:
-        logging.error("Cleanup error", exc_info=True)
+        logging.error("flightGPIO Cleanup error", exc_info=True)
 
 def beep():
     global BuzzerPin
@@ -84,11 +84,11 @@ def monitorBuzzer():
 			else:
 				time.sleep(.1)
 	except:
-		logging.error("Exception occurred", exc_info=True)
+		logging.error("flightGPIO Exception occurred", exc_info=True)
 		destroy()
 
-
 print("Iniitializing Ground Proxmity Alarm...")
+logging.info("Iniitializing Ground Proxmity Alarm...")
 alarm_thread=thread.Thread(target=monitorBuzzer) 
 alarm_thread.setDaemon(True)                  
 alarm_thread.start()

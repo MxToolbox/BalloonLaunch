@@ -41,7 +41,7 @@ class Radio(LineReader):
     lastResponse = ""    
     def connection_made(self, transport):
         global DefaultReceive
-        print("connection made")
+        logging.info("LoRa serial connection made")
         self.transport = transport
         self.send_cmd("sys set pindig GPIO11 0")
         self.send_cmd('radio set freq 903500000')        
@@ -85,7 +85,7 @@ class Radio(LineReader):
                 SNR = data
         except:
             print('ERROR: ' + data)
-            logging.error("Exception occurred", exc_info=True)
+            logging.error("LoRa Exception occurred", exc_info=True)
             return           
         self.send_cmd("sys set pindig GPIO10 0", delay=1)
 
@@ -98,6 +98,7 @@ class Radio(LineReader):
             print(exc)
         # todo:  make this more fault tolerant by attempting reconnect.
         print("port closed")
+        logging.error("LoRa serial port closed.")
 
     def tx(self):
         global DataToTransmit
@@ -126,6 +127,7 @@ def Transmit():
             time.sleep(.1)
 
 print("Iniitializing LoRa Radio...")
+logging.info("Iniitializing LoRa Radio...")
 ser = serial.Serial(args.radio, baudrate=57600)
 telemetry_thread=thread.Thread(target=Transmit) 
 telemetry_thread.setDaemon(True)                  

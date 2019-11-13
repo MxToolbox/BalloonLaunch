@@ -1,8 +1,11 @@
+import logging
+logging.basicConfig(level=logging.INFO,filename='/var/log/mdm2', format='%(asctime)s - %(levelname)s - %(message)s')
+
 import sys
 import os
 import time
 import math
-import logging
+
 from datetime import datetime, timedelta 
 import RPi.GPIO as GPIO
 import csvLog
@@ -29,9 +32,9 @@ GPIO.setmode(GPIO.BCM)  # global for the app
 
 LOCATION = os.path.dirname(os.path.abspath(__file__))
 #logging.basicConfig(level=logging.DEBUG,filename='mdm-2.log', format='%(process)d-%(levelname)s-%(message)s')
-logging.basicConfig(level=logging.DEBUG,filename='mdm-2.log')
-logger = logging.getLogger()
-logger.warning('Starting Flight Computer')
+
+#logger = logging.getLogger()
+logging.info('Starting Flight Computer')
 
 tracker = telemetry
 radio = loraRadio

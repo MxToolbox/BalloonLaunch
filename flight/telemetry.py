@@ -39,12 +39,12 @@ def IsGroundAlarm(GpsAltitudeMeters,PressureAltitudeMeters):
 		try:
 			altMeters = int(PressureAltitudeMeters)
 		except:
-			print("Unable to get altitude from GPS or altimeter!")
+			logging.warning("Unable to get altitude from GPS or altimeter!")
 
 	if altMeters > THRESHOLD_ALTITUDE_METERS:
 		IsArmed = True
 	if IsArmed and altMeters < THRESHOLD_ALTITUDE_METERS:
-		print("Gound Alarm")
+		logging.warning("Gound Alarm")
 		return True
 	else:
 		return False
@@ -67,7 +67,7 @@ def update():
     currentAlt = gpsd.fix.altitude
     if math.isnan(currentLat) or math.isnan(currentLon) or math.isnan(currentAlt):
         fmode.HasGpsFix = False
-        print("No Gps Fix, preserving last known fix.")
+        logging.warning("No Gps Fix, preserving last known fix.")
     else:
         fmode.HasGpsFix = True
         lastGoodLat = round(currentLat, 4)
@@ -80,7 +80,7 @@ def update():
 
     ublox8.CheckMode(lastGoodAlt)  # Check for UBlox dynamic mode and change if necessary
     fmode.AirborneGpsMode = ublox8.IsAirborneMode()
-    
+
     fmode.SetStatus(lastGoodAlt, lastPressureAlt, verticalSpeed)
     fmode.GroundProximity = IsGroundAlarm(lastGoodAlt, lastPressureAlt)
     if verticalSpeed > 0.25:
@@ -118,7 +118,7 @@ def pressureAltitude():
         lastTemperature = bmp.sensor.temperature
         return currentPressureAlt
     except:
-        print("Error in pressureAltitude()")
+        logging.error("pressureAltitude() Exception occurred", exc_info=True)
 
 def secondsSinceLastGoodFix():
     return  round((datetime.now() - lastGoodGpsFix).total_seconds(), 1)  #LastFix (seconds since)

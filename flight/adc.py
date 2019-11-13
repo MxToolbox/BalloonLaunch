@@ -30,7 +30,7 @@ def readVoltage(channel, factor = 1):
         Vout = round(((raw / 32768) * 4.096) * factor, 4)
         return Vout
     except:
-        logging.error("Exception occurred", exc_info=True)
+        logging.error("readVoltage() Exception occurred", exc_info=True)
 
 
 if __name__ == '__main__':     # Program start from here
