@@ -61,11 +61,17 @@ while True:
                 lastMessageCode = flightGPIO.CutDownEnergize(tracker.fmode.GroundProximity)
                 flightGPIO.CutdownArmed = False
             if command == "gps-airborne":
-                tracker.ublox8.setUbloxDynamicMode(6, True)
+                tracker.ublox8.setManualOverride(True)
+                tracker.ublox8.setUbloxDynamicMode(6)
                 lastMessageCode = 270
             if command == "gps-portable":
-                tracker.ublox8.setUbloxDynamicMode(0, True)
-                lastMessageCode = 270                
+                tracker.ublox8.setManualOverride(True)
+                tracker.ublox8.setUbloxDynamicMode(0)
+                lastMessageCode = 270              
+            if command == "gps-auto":
+                tracker.ublox8.setManualOverride(False)                
+                lastMessageCode = 270              
+              
 
         tracker.update()
         values[0] = str(datetime.now())
