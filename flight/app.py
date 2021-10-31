@@ -1,5 +1,5 @@
 import logging
-logging.basicConfig(level=logging.INFO,filename='/var/log/mdm2', format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO,filename='/var/log/mdm', format='%(asctime)s - %(levelname)s - %(message)s')
 
 import sys
 import os
@@ -72,7 +72,7 @@ while True:
                 tracker.ublox8.setManualOverride(False)                
                 lastMessageCode = 270              
               
-
+        print("Updating Telemetry")
         tracker.update()
         values[0] = str(datetime.now())
         values[1] = round(tracker.lastTemperature, 2)    # celsius
@@ -129,6 +129,7 @@ while True:
         loraRadio.DataToTransmit = valuesStr
         lastMessageCode = 250
     except Exception as e:
+        print(e)
         logging.error("Exception occurred", exc_info=True)
         lastMessageCode = 500
         time.sleep(1)

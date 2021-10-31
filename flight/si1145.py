@@ -150,20 +150,24 @@ SI1145_REG_CHIPSTAT                     = 0x30
 
 # I2C Address
 SI1145_ADDR                             = 0x60
-
+isFound = False
 class SI1145(object):
         def __init__(self, address=SI1145_ADDR, busnum=I2C.get_default_bus()):
+                try:
+                        self._logger = logging.getLogger('SI1145')
 
-                self._logger = logging.getLogger('SI1145')
+                        # Create I2C device.
+                        self._device = I2C.Device(address, busnum)
 
-                # Create I2C device.
-                self._device = I2C.Device(address, busnum)
+                        #reset device
+                        self._reset()
 
-                #reset device
-                self._reset()
+                        # Load calibration values.
+                        self._load_calibration()
 
-                # Load calibration values.
-                self._load_calibration()
+                        isFound = True
+                except:
+                        logging.info("si1145 not found.")
 
         # device reset
         def _reset(self):
@@ -248,7 +252,10 @@ class SI1145(object):
 
         # returns the UV index * 100 (divide by 100 to get the index)
         def readUV(self):
-                return self._device.readU16LE(0x2C)
+                if (isFound):
+                        return self._device.readU16LE(0x2C)
+                else:
+                        return 0
 
         #returns visible + IR light levels
         def readVisible(self):
